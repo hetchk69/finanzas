@@ -1,0 +1,822 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Libro de Lempiras</title>
+<meta name="theme-color" content="#26406B" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D131B" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lempiras">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAABtUlEQVR42u3bsQkAIAwAQadxDvdxf8XOBeyCYOTgJ0iuilhq69KxYgSCQ3AIDsEhOASH4BAcgkNwSHAIDsEhOASH4BAcgkNwCA4JDsEhOASH4BAcgkNwCA7BIcEhOASH4BAcgkNwCA7BITgER5LGXMGsHA444IADDjjggAMOOOCAAw444IADDjgEh+CAAw444IADDjjggAMOOOCAAw444IBDcAgOOLLiiK/8RnDAAQcccMABBxxwwAEHHHDAAQcccMDhQgoHHHDAITisHA444IADDjjggAMOOOCAAw444PC2AgcccMABBxxwwAEHHHDAAQcccMABBxwupHDAAQccgkNwwAEHHHDAAQcccMABBxxwwAEHHHDAAQccggMOOOCAAw444IADDjjggAMOOOCAAw44/sfxcnDAAQcccMABBxxwwAEHHHDAAQcccMABBxxwwAEHHHDAAQcccMABBxxwwAEHHHDAAQcccMABBxxwyNcEwSE4BIcEh+AQHIJDcAgOwSE4BIfgkOAQHIJDcAgOwSE4BIfgEBwSHIJDcAgOwSE4BIfgEByCQ3BIcAgOwSE4BIfgUKI2fILvzHX5leYAAAAASUVORK5CYII=">
+<link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAABtUlEQVR42u3bsQkAIAwAQadxDvdxf8XOBeyCYOTgJ0iuilhq69KxYgSCQ3AIDsEhOASH4BAcgkNwSHAIDsEhOASH4BAcgkNwCA4JDsEhOASH4BAcgkNwCA7BIcEhOASH4BAcgkNwCA7BITgER5LGXMGsHA444IADDjjggAMOOOCAAw444IADDjgEh+CAAw444IADDjjggAMOOOCAAw444IBDcAgOOLLiiK/8RnDAAQcccMABBxxwwAEHHHDAAQcccMDhQgoHHHDAITisHA444IADDjjggAMOOOCAAw444PC2AgcccMABBxxwwAEHHHDAAQcccMABBxwupHDAAQccgkNwwAEHHHDAAQcccMABBxxwwAEHHHDAAQccggMOOOCAAw444IADDjjggAMOOOCAAw44/sfxcnDAAQcccMABBxxwwAEHHHDAAQcccMABBxxwwAEHHHDAAQcccMABBxxwwAEHHHDAAQcccMABBxxwyNcEwSE4BIcEh+AQHIJDcAgOwSE4BIfgkOAQHIJDcAgOwSE4BIfgEBwSHIJDcAgOwSE4BIfgEByCQ3BIcAgOwSE4BIfgUKI2fILvzHX5leYAAAAASUVORK5CYII=">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* ------------------------------------------------------------
+   Paleta: el cromo es acromático con sesgo pizarra a propósito.
+   Los diez colores saturados de la página salen de la base de
+   datos (categories.color), así que la interfaz no compite.
+   ------------------------------------------------------------ */
+:root{
+  --paper:#F6F7F9; --card:#FFFFFF; --sunk:#EFF2F6;
+  --ink:#151D28;   --ink2:#5C6879; --ink3:#8B97A6;
+  --line:#E3E7ED;  --accent:#26406B;
+  --ok:#2E7D5B;    --warn:#9C6F0B; --over:#B03A2E;
+  --on-accent:#FFFFFF;
+  --shadow:0 1px 2px rgba(21,29,40,.05), 0 8px 24px -16px rgba(21,29,40,.28);
+  --r:10px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0D131B; --card:#151D27; --sunk:#111823;
+    --ink:#E7EDF5;   --ink2:#8FA0B4; --ink3:#65758A;
+    --line:#22303F;  --accent:#84A9E0;
+    --ok:#4FB286;    --warn:#D7A23F; --over:#E2705F;
+    --on-accent:#0D131B;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0D131B; --card:#151D27; --sunk:#111823;
+  --ink:#E7EDF5;   --ink2:#8FA0B4; --ink3:#65758A;
+  --line:#22303F;  --accent:#84A9E0;
+  --ok:#4FB286;    --warn:#D7A23F; --over:#E2705F;
+  --on-accent:#0D131B;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--paper); color:var(--ink);
+  font:400 15px/1.5 "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:calc(env(safe-area-inset-bottom,0px) + 24px);
+  -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:760px; margin:0 auto; padding:0 16px; padding-block:20px}
+
+h1,h2,h3{font-family:"Bricolage Grotesque", "IBM Plex Sans", sans-serif; margin:0; text-wrap:balance}
+h1{font-size:26px; font-weight:700; letter-spacing:-.02em}
+h2{font-size:13px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--ink2)}
+.num{font-family:"IBM Plex Mono", ui-monospace, monospace; font-variant-numeric:tabular-nums}
+
+section{margin-top:28px}
+.sec-head{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:10px}
+.sec-head .aside{font-size:12px; color:var(--ink3)}
+
+/* ---- encabezado / ciclo ---- */
+.top{display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap}
+.sub{color:var(--ink2); font-size:13px; margin-top:4px}
+.rail{height:4px; background:var(--sunk); border-radius:99px; overflow:hidden; margin-top:14px}
+.rail>i{display:block; height:100%; background:var(--accent); border-radius:99px}
+
+/* ---- resumen ---- */
+.resumen{display:grid; grid-template-columns:1.3fr 1fr 1fr; gap:12px; margin-top:18px}
+@media (max-width:520px){ .resumen{grid-template-columns:1fr 1fr} .resumen>.neto{grid-column:1/-1} }
+.neto{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--r);
+  padding:16px; box-shadow:var(--shadow);
+}
+.flat{padding:16px 4px}
+.k{font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3)}
+.v{font-size:26px; font-weight:600; margin-top:6px; letter-spacing:-.02em}
+.flat .v{font-size:19px; color:var(--ink2)}
+.v.pos{color:var(--ok)} .v.neg{color:var(--over)}
+
+/* ---- presupuestos ---- */
+.meter{padding:13px 0; border-bottom:1px solid var(--line)}
+.meter:last-child{border-bottom:0}
+.meter .line1{display:flex; justify-content:space-between; align-items:baseline; gap:10px}
+.meter .name{display:flex; align-items:center; gap:8px; font-weight:500; min-width:0}
+.dot{width:8px; height:8px; border-radius:99px; flex:none}
+.meter .amt{font-size:13px; color:var(--ink2); white-space:nowrap}
+.bar{height:7px; background:var(--sunk); border-radius:99px; margin-top:8px; position:relative; overflow:hidden}
+.bar>i{position:absolute; inset:0 auto 0 0; border-radius:99px}
+.meter .foot{display:flex; justify-content:space-between; font-size:12px; margin-top:6px; color:var(--ink3)}
+.meter .foot .state{font-weight:500}
+.state.ok{color:var(--ok)} .state.warn{color:var(--warn)} .state.over{color:var(--over)}
+
+/* ---- lista genérica ---- */
+.rows{background:var(--card); border:1px solid var(--line); border-radius:var(--r); padding:2px 16px; box-shadow:var(--shadow)}
+.row{display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row .lbl{min-width:0}
+.row .lbl b{font-weight:500}
+.row .lbl small{display:block; color:var(--ink3); font-size:12px; margin-top:2px}
+
+/* ---- movimientos (libro contable) ---- */
+.mov{display:grid; grid-template-columns:44px 1fr auto; gap:12px; align-items:center;
+     padding:11px 0; border-bottom:1px solid var(--line); width:100%;
+     background:none; border-left:0; border-right:0; border-top:0; text-align:left;
+     color:inherit; font:inherit; cursor:pointer}
+.mov:last-child{border-bottom:0}
+.mov:hover{background:var(--sunk)}
+.mov:focus-visible{outline:2px solid var(--accent); outline-offset:-2px}
+.mov .d{font-size:11px; color:var(--ink3); text-align:center; line-height:1.25}
+.mov .d b{display:block; font-size:15px; color:var(--ink2); font-weight:600}
+.mov .t b{font-weight:500}
+.mov .t small{display:block; color:var(--ink3); font-size:12px; margin-top:2px;
+              overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.mov .m{font-weight:600; white-space:nowrap}
+.m.gasto{color:var(--ink)} .m.ingreso{color:var(--ok)} .m.transferencia{color:var(--ink3)}
+
+/* ---- gráfico ---- */
+.chart{background:var(--card); border:1px solid var(--line); border-radius:var(--r); padding:14px 16px 10px; box-shadow:var(--shadow)}
+.chart svg{display:block; width:100%; height:auto}
+
+/* ---- formularios ---- */
+form.capture{background:var(--card); border:1px solid var(--line); border-radius:var(--r); padding:16px; box-shadow:var(--shadow)}
+.grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px}
+label{display:block; font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); margin-bottom:5px}
+input,select,textarea{
+  width:100%; padding:9px 10px; border:1px solid var(--line); border-radius:8px;
+  background:var(--paper); color:var(--ink); font:400 15px/1.4 "IBM Plex Sans", sans-serif;
+}
+input[type=number]{font-family:"IBM Plex Mono", monospace; font-variant-numeric:tabular-nums}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent); outline-offset:1px; border-color:transparent}
+.tabs{display:flex; gap:6px; margin-bottom:14px; background:var(--sunk); padding:4px; border-radius:9px}
+.tabs button{flex:1; padding:7px 4px; border:0; border-radius:6px; background:none; color:var(--ink2);
+             font:500 13px "IBM Plex Sans",sans-serif; cursor:pointer}
+.tabs button[aria-selected=true]{background:var(--card); color:var(--ink); box-shadow:var(--shadow)}
+.actions{display:flex; gap:8px; margin-top:14px; flex-wrap:wrap}
+.btn{padding:9px 16px; border-radius:8px; border:1px solid var(--accent); background:var(--accent);
+     color:var(--on-accent); font:500 14px "IBM Plex Sans",sans-serif; cursor:pointer}
+.btn.ghost{background:none; color:var(--ink2); border-color:var(--line)}
+.btn.danger{background:none; color:var(--over); border-color:var(--over)}
+.btn:disabled{opacity:.5; cursor:default}
+
+/* ---- avisos ---- */
+.note{border:1px solid var(--line); border-left:3px solid var(--warn); background:var(--card);
+      border-radius:8px; padding:12px 14px; font-size:13px; color:var(--ink2); margin-top:16px}
+.note b{color:var(--ink)}
+.note code{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--sunk); padding:1px 5px; border-radius:4px}
+.toast{position:fixed; left:50%; transform:translateX(-50%); bottom:calc(env(safe-area-inset-bottom,0px) + 18px);
+       background:var(--ink); color:var(--paper); padding:10px 18px; border-radius:99px; font-size:14px;
+       box-shadow:var(--shadow); z-index:50; max-width:calc(100% - 32px)}
+.empty{color:var(--ink3); font-size:14px; padding:16px 0}
+.skel{color:var(--ink3)}
+
+dialog{border:1px solid var(--line); border-radius:12px; background:var(--card); color:var(--ink);
+       padding:20px; max-width:420px; width:calc(100% - 32px); box-shadow:var(--shadow)}
+dialog::backdrop{background:rgba(10,15,22,.5)}
+
+details.cfg{margin-top:32px; font-size:13px; color:var(--ink2)}
+details.cfg summary{cursor:pointer; color:var(--ink3)}
+details.cfg .grid{margin-top:12px}
+
+@media (prefers-reduced-motion:reduce){ *{transition:none!important; animation:none!important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <h1>Libro de Lempiras</h1>
+      <p class="sub" id="ciclo">Cargando el ciclo…</p>
+    </div>
+    <button class="btn ghost" id="tema" type="button" aria-label="Cambiar tema">Tema</button>
+  </header>
+  <div class="rail"><i id="rail" style="width:0%"></i></div>
+
+  <div class="resumen">
+    <div class="neto">
+      <div class="k">Neto del ciclo</div>
+      <div class="v num skel" id="neto">—</div>
+    </div>
+    <div class="flat">
+      <div class="k">Ingresos</div>
+      <div class="v num skel" id="ingresos">—</div>
+    </div>
+    <div class="flat">
+      <div class="k">Gastos</div>
+      <div class="v num skel" id="gastos">—</div>
+    </div>
+  </div>
+
+  <div id="aviso"></div>
+
+  <section>
+    <div class="sec-head"><h2>Presupuestos</h2><span class="aside" id="presup-aside"></span></div>
+    <div class="rows" id="presupuestos"><p class="empty">Cargando…</p></div>
+  </section>
+
+  <section id="sec-serie">
+    <div class="sec-head"><h2>Gasto diario</h2><span class="aside" id="serie-aside"></span></div>
+    <div class="chart" id="serie"><p class="empty">Cargando…</p></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Cuentas</h2><span class="aside" id="saldos-aside"></span></div>
+    <div class="rows" id="saldos"><p class="empty">Cargando…</p></div>
+  </section>
+
+  <section id="sec-metas" hidden>
+    <div class="sec-head"><h2>Metas de ahorro</h2></div>
+    <div class="rows" id="metas"></div>
+  </section>
+
+  <section id="sec-movs" hidden>
+    <div class="sec-head"><h2>Movimientos</h2><span class="aside">Toca uno para corregirlo</span></div>
+    <div class="rows" id="movimientos"></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Registrar</h2></div>
+    <form class="capture" id="captura">
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" id="tab-gasto" aria-selected="true">Gasto</button>
+        <button type="button" role="tab" id="tab-ingreso" aria-selected="false">Ingreso</button>
+        <button type="button" role="tab" id="tab-transferencia" aria-selected="false">Transferencia</button>
+      </div>
+      <div class="grid">
+        <div>
+          <label for="f-monto">Monto (L)</label>
+          <input id="f-monto" type="number" step="0.01" min="0.01" inputmode="decimal" required>
+        </div>
+        <div id="wrap-cat">
+          <label for="f-cat">Categoría</label>
+          <select id="f-cat"></select>
+        </div>
+        <div>
+          <label for="f-acc" id="lbl-acc">Cuenta</label>
+          <select id="f-acc"></select>
+        </div>
+        <div id="wrap-dest" hidden>
+          <label for="f-dest">Cuenta destino</label>
+          <select id="f-dest"></select>
+        </div>
+        <div>
+          <label for="f-fecha">Fecha</label>
+          <input id="f-fecha" type="date">
+        </div>
+        <div>
+          <label for="f-nota">Nota</label>
+          <input id="f-nota" type="text" placeholder="opcional">
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn" type="submit" id="f-enviar">Registrar</button>
+        <button class="btn ghost" type="button" id="f-deshacer">Deshacer último</button>
+      </div>
+    </form>
+  </section>
+
+  <details class="cfg">
+    <summary>Conexión</summary>
+    <div class="grid">
+      <div>
+        <label for="c-url">Project URL</label>
+        <input id="c-url" type="url" spellcheck="false">
+      </div>
+      <div>
+        <label for="c-key">anon key</label>
+        <input id="c-key" type="password" spellcheck="false">
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn ghost" type="button" id="c-guardar">Guardar y recargar</button>
+    </div>
+    <p style="margin-top:10px; color:var(--ink3); font-size:12px">
+      Se guardan en este navegador. La anon key solo puede ejecutar las funciones
+      otorgadas: no lee ni borra tablas.
+    </p>
+  </details>
+
+</div>
+
+<dialog id="dlg">
+  <h2 style="margin-bottom:14px">Corregir movimiento</h2>
+  <form method="dialog" id="dlg-form">
+    <div class="grid">
+      <div>
+        <label for="e-monto">Monto (L)</label>
+        <input id="e-monto" type="number" step="0.01" min="0.01" inputmode="decimal" required>
+      </div>
+      <div>
+        <label for="e-fecha">Fecha</label>
+        <input id="e-fecha" type="date">
+      </div>
+      <div id="wrap-e-cat">
+        <label for="e-cat">Categoría</label>
+        <select id="e-cat"></select>
+      </div>
+      <div>
+        <label for="e-acc">Cuenta</label>
+        <select id="e-acc"></select>
+      </div>
+    </div>
+    <div style="margin-top:12px">
+      <label for="e-nota">Nota</label>
+      <input id="e-nota" type="text" placeholder="opcional">
+    </div>
+    <div class="actions">
+      <button class="btn" value="guardar" id="e-guardar">Guardar</button>
+      <button class="btn ghost" value="cancelar" type="button" id="e-cancelar">Cancelar</button>
+      <button class="btn danger" value="borrar" type="button" id="e-borrar" style="margin-left:auto">Eliminar</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+(function(){
+"use strict";
+
+/* ------------------------------------------------------------
+   Conexión. La anon key vive aquí por el mismo motivo que vive
+   dentro del atajo: solo puede ejecutar las funciones otorgadas.
+   ------------------------------------------------------------ */
+var DEF_URL = "https://dabvugwhzwkmdmsvrazz.supabase.co";
+var ICONO = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAABtUlEQVR42u3bsQkAIAwAQadxDvdxf8XOBeyCYOTgJ0iuilhq69KxYgSCQ3AIDsEhOASH4BAcgkNwSHAIDsEhOASH4BAcgkNwCA4JDsEhOASH4BAcgkNwCA7BIcEhOASH4BAcgkNwCA7BITgER5LGXMGsHA444IADDjjggAMOOOCAAw444IADDjgEh+CAAw444IADDjjggAMOOOCAAw444IBDcAgOOLLiiK/8RnDAAQcccMABBxxwwAEHHHDAAQcccMDhQgoHHHDAITisHA444IADDjjggAMOOOCAAw444PC2AgcccMABBxxwwAEHHHDAAQcccMABBxwupHDAAQccgkNwwAEHHHDAAQcccMABBxxwwAEHHHDAAQccggMOOOCAAw444IADDjjggAMOOOCAAw44/sfxcnDAAQcccMABBxxwwAEHHHDAAQcccMABBxxwwAEHHHDAAQcccMABBxxwwAEHHHDAAQcccMABBxxwyNcEwSE4BIcEh+AQHIJDcAgOwSE4BIfgkOAQHIJDcAgOwSE4BIfgEBwSHIJDcAgOwSE4BIfgEByCQ3BIcAgOwSE4BIfgUKI2fILvzHX5leYAAAAASUVORK5CYII=";
+/* Vacia a proposito: si este archivo termina en una URL publica, la llave
+   no debe viajar dentro. Se pega una vez en «Conexion» y queda guardada en
+   el dispositivo, o llega por el enlace de alta (#k=...). */
+var DEF_KEY = "";
+
+function ls(k, d){ try{ var v = localStorage.getItem(k); return v === null ? d : v; }catch(e){ return d; } }
+function lset(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
+
+/* Alta por enlace. El fragmento (#) nunca se manda al servidor, asi que
+   la llave no queda en ningun registro de acceso; se guarda y se borra de
+   la barra de direcciones en el acto. */
+(function(){
+  var h = location.hash || "";
+  if(!h) return;
+  var k = h.match(/[#&]k=([^&]*)/);
+  var u = h.match(/[#&]u=([^&]*)/);
+  var toco = false;
+  if(k && k[1]){ lset("quanto.key", decodeURIComponent(k[1])); toco = true; }
+  if(u && u[1]){ lset("quanto.url", decodeURIComponent(u[1])); toco = true; }
+  if(toco){
+    try{ history.replaceState(null, "", location.pathname + location.search); }
+    catch(e){ location.hash = ""; }
+  }
+})();
+
+var URL_ = ls("quanto.url", DEF_URL).replace(/\/+$/, "");
+var KEY_ = ls("quanto.key", DEF_KEY);
+
+var $ = function(id){ return document.getElementById(id); };
+var fmt = new Intl.NumberFormat("es-HN", {minimumFractionDigits:2, maximumFractionDigits:2});
+var L = function(n){ return "L " + fmt.format(Number(n || 0)); };
+var esc = function(s){
+  return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+};
+
+/* Error de PostgREST: la clave útil es `message`, no el status. */
+function rpc(fn, body){
+  return fetch(URL_ + "/rest/v1/rpc/" + fn, {
+    method:"POST",
+    headers:{ "apikey":KEY_, "Authorization":"Bearer " + KEY_, "Content-Type":"application/json" },
+    body: JSON.stringify(body || {})
+  }).then(function(r){
+    return r.text().then(function(txt){
+      var j = null;
+      try{ j = txt ? JSON.parse(txt) : null; }catch(e){ j = null; }
+      if(!r.ok){
+        var err = new Error((j && j.message) || ("HTTP " + r.status));
+        err.code = j && j.code;
+        err.status = r.status;
+        throw err;
+      }
+      return j;
+    });
+  });
+}
+function falta(e){ return e.status === 404 || e.code === "PGRST202"; }
+
+var toastT;
+function toast(msg){
+  var old = document.querySelector(".toast");
+  if(old) old.remove();
+  var el = document.createElement("div");
+  el.className = "toast";
+  el.setAttribute("role", "status");
+  el.textContent = msg;
+  document.body.appendChild(el);
+  clearTimeout(toastT);
+  toastT = setTimeout(function(){ el.remove(); }, 4000);
+}
+
+/* ---------------- tema ---------------- */
+var tema = ls("quanto.tema", "");
+if(tema) document.documentElement.setAttribute("data-theme", tema);
+$("tema").addEventListener("click", function(){
+  var cur = document.documentElement.getAttribute("data-theme");
+  var next = cur === "dark" ? "light" : cur === "light" ? "" : "dark";
+  if(next) document.documentElement.setAttribute("data-theme", next);
+  else document.documentElement.removeAttribute("data-theme");
+  lset("quanto.tema", next);
+});
+
+/* ---------------- estado ---------------- */
+var listas = {gastos:[], ingresos:[], cuentas:[]};
+var movs = [];
+var v2 = true;
+var hoyISO = new Date().toLocaleDateString("en-CA");
+
+/* ---------------- render ---------------- */
+function pintarCiclo(c, r){
+  if(c){
+    var total = Number(c.dias_total) || 1;
+    var dia = Math.min(Math.max(Number(c.dia_actual) || 1, 1), total);
+    $("ciclo").textContent = "Ciclo " + c.desde + " › " + c.hasta + " · día " + dia + " de " + total;
+    $("rail").style.width = (100 * dia / total) + "%";
+  } else if(r){
+    /* Sin dashboard() no viene el día del ciclo: se calcula aquí, porque
+       pintar la barra llena se lee como "ciclo terminado". */
+    var d0 = new Date(r.desde + "T00:00:00"), d1 = new Date(r.hasta + "T00:00:00");
+    var hy = new Date(hoyISO + "T00:00:00");
+    var tot = Math.round((d1 - d0) / 86400000) + 1;
+    var dd = Math.min(Math.max(Math.round((hy - d0) / 86400000) + 1, 1), tot);
+    $("ciclo").textContent = "Ciclo " + r.desde + " › " + r.hasta + " · día " + dd + " de " + tot;
+    $("rail").style.width = (100 * dd / tot) + "%";
+  }
+  var neto = Number(r.neto || 0);
+  var n = $("neto");
+  n.textContent = L(neto);
+  n.className = "v num " + (neto > 0 ? "pos" : neto < 0 ? "neg" : "");
+  $("ingresos").textContent = L(r.ingresos);
+  $("ingresos").className = "v num";
+  $("gastos").textContent = L(r.gastos);
+  $("gastos").className = "v num";
+}
+
+function pintarPresupuestos(bs){
+  var box = $("presupuestos");
+  if(!bs || !bs.length){
+    box.innerHTML = '<p class="empty">Sin presupuestos activos.</p>';
+    $("presup-aside").textContent = "";
+    return;
+  }
+  var excedidos = bs.filter(function(b){ return Number(b.pct_usado) > 100; }).length;
+  $("presup-aside").textContent = excedidos
+    ? excedidos + (excedidos === 1 ? " excedido" : " excedidos")
+    : bs.length + " activos";
+
+  box.innerHTML = bs.map(function(b){
+    var pct = Number(b.pct_usado) || 0;
+    var estado = pct > 100 ? "over" : pct >= 80 ? "warn" : "ok";
+    var color = estado === "over" ? "var(--over)" : estado === "warn" ? "var(--warn)" : (b.color || "var(--accent)");
+    var disp = Number(b.disponible);
+    var leyenda = estado === "over"
+      ? "Excedido por " + L(Math.abs(disp))
+      : "Quedan " + L(disp);
+    return '<div class="meter">' +
+      '<div class="line1">' +
+        '<span class="name"><i class="dot" style="background:' + esc(b.color || "#94A3B8") + '"></i>' + esc(b.categoria) + '</span>' +
+        '<span class="amt num">' + L(b.gastado) + ' / ' + L(b.limite) + '</span>' +
+      '</div>' +
+      '<div class="bar"><i style="width:' + Math.min(pct, 100) + '%; background:' + color + '"></i></div>' +
+      '<div class="foot"><span class="state ' + estado + '">' + leyenda + '</span>' +
+      '<span class="num">' + fmt.format(pct) + '%</span></div>' +
+    '</div>';
+  }).join("");
+}
+
+function pintarSaldos(ss){
+  var box = $("saldos");
+  if(!ss || !ss.length){ box.innerHTML = '<p class="empty">Sin cuentas.</p>'; return; }
+  var total = ss.reduce(function(a, s){ return a + Number(s.saldo || 0); }, 0);
+  $("saldos-aside").textContent = "Total " + L(total);
+  box.innerHTML = ss.map(function(s){
+    var v = Number(s.saldo || 0);
+    return '<div class="row"><span class="lbl"><b>' + esc(s.cuenta) + '</b>' +
+      '<small>' + esc(s.tipo) + '</small></span>' +
+      '<span class="num" style="font-weight:600;color:' + (v < 0 ? "var(--over)" : "inherit") + '">' + L(v) + '</span></div>';
+  }).join("");
+}
+
+function pintarMetas(ms){
+  if(!ms || !ms.length){ $("sec-metas").hidden = true; return; }
+  $("sec-metas").hidden = false;
+  $("metas").innerHTML = ms.map(function(m){
+    var pct = Number(m.pct) || 0;
+    var pie = [];
+    if(m.fecha_objetivo) pie.push("para " + m.fecha_objetivo);
+    if(m.dias_restantes != null) pie.push(m.dias_restantes + " días");
+    if(m.cuota_mensual != null) pie.push(L(m.cuota_mensual) + "/mes");
+    return '<div class="meter">' +
+      '<div class="line1"><span class="name">' + esc(m.meta) + '</span>' +
+      '<span class="amt num">' + L(m.ahorrado) + ' / ' + L(m.objetivo) + '</span></div>' +
+      '<div class="bar"><i style="width:' + Math.min(pct, 100) + '%; background:var(--ok)"></i></div>' +
+      '<div class="foot"><span>' + esc(pie.join(" · ") || "sin fecha") + '</span>' +
+      '<span class="num">' + fmt.format(pct) + '%</span></div>' +
+    '</div>';
+  }).join("");
+}
+
+/* Barras diarias. Una sola escala: el eje se rotula con el máximo
+   real, y la barra del día con más gasto queda marcada. */
+function pintarSerie(serie){
+  var box = $("serie");
+  if(!serie || !serie.length){ $("sec-serie").hidden = true; return; }
+  var max = Math.max.apply(null, serie.map(function(d){ return Number(d.gastos) || 0; }));
+  if(max <= 0){
+    box.innerHTML = '<p class="empty">Sin gastos registrados en este ciclo todavía.</p>';
+    $("serie-aside").textContent = "";
+    return;
+  }
+  var totalG = serie.reduce(function(a, d){ return a + Number(d.gastos || 0); }, 0);
+  var conGasto = serie.filter(function(d){ return Number(d.gastos) > 0; }).length;
+  $("serie-aside").textContent = "Promedio " + L(totalG / Math.max(conGasto, 1)) + " por día con gasto";
+
+  var n = serie.length, W = 680, H = 132, padL = 58, padB = 18, padT = 8;
+  var innerW = W - padL - 6, innerH = H - padB - padT;
+  var bw = innerW / n, gap = Math.min(bw * 0.22, 3);
+  var hoy = hoyISO;
+
+  var barras = serie.map(function(d, i){
+    var g = Number(d.gastos) || 0;
+    var h = g > 0 ? Math.max(innerH * g / max, 2) : 0;
+    var x = padL + i * bw + gap / 2;
+    var esHoy = d.dia === hoy;
+    var esMax = g === max && g > 0;
+    var fill = esMax ? "var(--accent)" : esHoy ? "var(--ink2)" : "var(--ink3)";
+    var op = g > 0 ? (esMax || esHoy ? 1 : .5) : 0;
+    return '<rect x="' + x.toFixed(1) + '" y="' + (padT + innerH - h).toFixed(1) +
+      '" width="' + Math.max(bw - gap, 1).toFixed(1) + '" height="' + h.toFixed(1) +
+      '" rx="1.5" fill="' + fill + '" fill-opacity="' + op + '"><title>' +
+      esc(d.dia) + ": " + L(g) + '</title></rect>';
+  }).join("");
+
+  var ticks = [max, max / 2, 0].map(function(v){
+    var y = padT + innerH - innerH * (v / max);
+    return '<line x1="' + padL + '" x2="' + (W - 6) + '" y1="' + y.toFixed(1) + '" y2="' + y.toFixed(1) +
+      '" stroke="var(--line)" stroke-width="1"/>' +
+      '<text x="' + (padL - 8) + '" y="' + (y + 3.5).toFixed(1) + '" text-anchor="end" font-size="10" ' +
+      'font-family="IBM Plex Mono, monospace" fill="var(--ink3)">' + fmt.format(v) + '</text>';
+  }).join("");
+
+  var primero = serie[0].dia.slice(8) + "/" + serie[0].dia.slice(5, 7);
+  var ultimo = serie[n - 1].dia.slice(8) + "/" + serie[n - 1].dia.slice(5, 7);
+
+  box.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" ' +
+    'aria-label="Gasto por día del ciclo, máximo ' + L(max) + '">' + ticks + barras +
+    '<text x="' + padL + '" y="' + (H - 4) + '" font-size="10" font-family="IBM Plex Mono, monospace" fill="var(--ink3)">' + primero + '</text>' +
+    '<text x="' + (W - 6) + '" y="' + (H - 4) + '" text-anchor="end" font-size="10" font-family="IBM Plex Mono, monospace" fill="var(--ink3)">' + ultimo + '</text>' +
+    '</svg>';
+}
+
+var MES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+function pintarMovs(ms){
+  movs = ms || [];
+  if(!v2){ $("sec-movs").hidden = true; return; }
+  $("sec-movs").hidden = false;
+  var box = $("movimientos");
+  if(!movs.length){
+    box.innerHTML = '<p class="empty">Todavía no hay movimientos. Registra el primero abajo.</p>';
+    return;
+  }
+  box.innerHTML = movs.map(function(m, i){
+    var d = String(m.fecha).split("-");
+    var signo = m.tipo === "ingreso" ? "+" : m.tipo === "gasto" ? "−" : "";
+    var det = m.tipo === "transferencia"
+      ? esc(m.cuenta) + " › " + esc(m.cuenta_destino)
+      : esc(m.cuenta);
+    if(m.nota) det += " · " + esc(m.nota);
+    if(m.recurrente) det += " · recurrente";
+    var titulo = m.tipo === "transferencia" ? "Transferencia" : esc(m.categoria || "—");
+    return '<button class="mov" type="button" data-i="' + i + '">' +
+      '<span class="d"><b>' + Number(d[2]) + '</b>' + MES[Number(d[1]) - 1] + '</span>' +
+      '<span class="t"><b>' + titulo + '</b><small>' + det + '</small></span>' +
+      '<span class="m num ' + esc(m.tipo) + '">' + signo + L(m.monto) + '</span>' +
+    '</button>';
+  }).join("");
+}
+
+function opciones(sel, arr, valor){
+  sel.innerHTML = arr.map(function(v){ return '<option>' + esc(v) + '</option>'; }).join("");
+  if(valor != null) sel.value = valor;
+}
+
+/* ---------------- carga ---------------- */
+function cargar(){
+  return rpc("dashboard", {p_limit:40}).then(function(d){
+    v2 = true;
+    $("aviso").innerHTML = "";
+    pintarCiclo(d.ciclo, d.resumen);
+    pintarPresupuestos(d.presupuestos);
+    pintarSerie(d.serie);
+    pintarSaldos(d.saldos);
+    pintarMetas(d.metas);
+    pintarMovs(d.movimientos);
+  }).catch(function(e){
+    if(!falta(e)) throw e;
+    /* El complemento no está aplicado: la página sigue sirviendo
+       con lo que el script base sí expone. */
+    v2 = false;
+    $("aviso").innerHTML = '<div class="note"><b>Falta aplicar <code>quanto_v2.sql</code>.</b> ' +
+      'Sin él no hay movimientos, metas ni gráfico diario, y <code>run_recurring()</code> ' +
+      'sigue abierta a cualquiera con la anon key. Pégalo en el SQL Editor y recarga.</div>';
+    $("sec-serie").hidden = true;
+    $("sec-movs").hidden = true;
+    $("sec-metas").hidden = true;
+    return rpc("cycle_summary").then(function(d){
+      pintarCiclo(null, d.resumen);
+      pintarPresupuestos(d.presupuestos);
+      pintarSaldos(d.saldos);
+    });
+  });
+}
+
+function cargarListas(){
+  return rpc("get_lists").then(function(l){
+    listas = l;
+    opciones($("f-cat"), l.gastos);
+    /* Efectivo es la cuenta del atajo principal; por orden alfabético
+       caería Ahorros, que casi nunca es de donde sale un gasto. */
+    var pref = l.cuentas.indexOf("Efectivo") >= 0 ? "Efectivo" : l.cuentas[0];
+    var otras = l.cuentas.filter(function(c){ return c !== pref; });
+    opciones($("f-acc"), l.cuentas, pref);
+    opciones($("f-dest"), l.cuentas,
+             otras.indexOf("Ahorros") >= 0 ? "Ahorros" : otras[0]);
+    opciones($("e-acc"), l.cuentas);
+  });
+}
+
+function refrescar(){
+  return cargar().catch(function(e){ toast("Error: " + e.message); });
+}
+
+/* ---------------- captura ---------------- */
+var tipo = "gasto";
+["gasto","ingreso","transferencia"].forEach(function(t){
+  $("tab-" + t).addEventListener("click", function(){
+    tipo = t;
+    ["gasto","ingreso","transferencia"].forEach(function(o){
+      $("tab-" + o).setAttribute("aria-selected", String(o === t));
+    });
+    var esTrans = t === "transferencia";
+    $("wrap-cat").hidden = esTrans;
+    $("wrap-dest").hidden = !esTrans;
+    $("lbl-acc").textContent = esTrans ? "Cuenta origen" : "Cuenta";
+    if(!esTrans) opciones($("f-cat"), t === "gasto" ? listas.gastos : listas.ingresos);
+  });
+});
+
+$("captura").addEventListener("submit", function(ev){
+  ev.preventDefault();
+  var monto = parseFloat($("f-monto").value);
+  if(!(monto > 0)){ toast("El monto debe ser mayor que cero"); return; }
+  var fecha = $("f-fecha").value || null;
+  var nota = $("f-nota").value.trim() || null;
+  var fn, args;
+
+  if(tipo === "transferencia"){
+    if($("f-acc").value === $("f-dest").value){ toast("Origen y destino deben ser distintos"); return; }
+    fn = "transfer";
+    args = {p_amount:monto, p_from:$("f-acc").value, p_to:$("f-dest").value, p_note:nota};
+  } else {
+    fn = tipo === "gasto" ? "log_expense" : "log_income";
+    args = {p_amount:monto, p_category:$("f-cat").value, p_account:$("f-acc").value, p_note:nota};
+  }
+  if(fecha) args.p_date = fecha;
+
+  $("f-enviar").disabled = true;
+  rpc(fn, args).then(function(r){
+    if(tipo === "gasto"){
+      toast(r.disponible == null
+        ? L(monto) + " en " + r.categoria
+        : L(monto) + " en " + r.categoria + " · quedan " + L(r.disponible));
+    } else if(tipo === "ingreso"){
+      toast(L(monto) + " en " + r.cuenta + " · saldo " + L(r.saldo));
+    } else {
+      toast("Transferido " + L(monto) + " · origen " + L(r.saldo_origen));
+    }
+    $("f-monto").value = ""; $("f-nota").value = "";
+    return refrescar();
+  }).catch(function(e){
+    toast("Error: " + e.message);
+  }).then(function(){ $("f-enviar").disabled = false; });
+});
+
+$("f-deshacer").addEventListener("click", function(){
+  $("f-deshacer").disabled = true;
+  rpc("undo_last").then(function(r){
+    toast(r.ok ? "Borrado: " + L(r.monto) + " (" + r.tipo + ")" : "Sin movimientos");
+    return refrescar();
+  }).catch(function(e){ toast("Error: " + e.message); })
+    .then(function(){ $("f-deshacer").disabled = false; });
+});
+
+/* ---------------- corregir ---------------- */
+var dlg = $("dlg"), editando = null;
+
+$("movimientos").addEventListener("click", function(ev){
+  var b = ev.target.closest(".mov");
+  if(!b) return;
+  var m = movs[Number(b.dataset.i)];
+  if(!m) return;
+  editando = m;
+  $("e-monto").value = Number(m.monto);
+  $("e-fecha").value = m.fecha;
+  $("e-nota").value = m.nota || "";
+  var esTrans = m.tipo === "transferencia";
+  $("wrap-e-cat").hidden = esTrans;
+  if(!esTrans){
+    opciones($("e-cat"), m.tipo === "gasto" ? listas.gastos : listas.ingresos, m.categoria);
+  }
+  opciones($("e-acc"), listas.cuentas, m.cuenta);
+  dlg.showModal();
+});
+
+$("e-cancelar").addEventListener("click", function(){ dlg.close(); });
+
+$("dlg-form").addEventListener("submit", function(ev){
+  ev.preventDefault();
+  if(!editando) return;
+  var monto = parseFloat($("e-monto").value);
+  if(!(monto > 0)){ toast("El monto debe ser mayor que cero"); return; }
+  var args = {
+    p_id:      editando.id,
+    p_amount:  monto,
+    p_account: $("e-acc").value,
+    p_date:    $("e-fecha").value || editando.fecha,
+    p_note:    $("e-nota").value.trim()   /* cadena vacía = borrar la nota */
+  };
+  if(editando.tipo !== "transferencia") args.p_category = $("e-cat").value;
+
+  $("e-guardar").disabled = true;
+  rpc("edit_transaction", args).then(function(){
+    dlg.close();
+    toast("Movimiento corregido");
+    return refrescar();
+  }).catch(function(e){ toast("Error: " + e.message); })
+    .then(function(){ $("e-guardar").disabled = false; });
+});
+
+$("e-borrar").addEventListener("click", function(){
+  if(!editando) return;
+  if(!confirm("¿Eliminar este movimiento de " + L(editando.monto) + "? No se puede deshacer.")) return;
+  rpc("delete_transaction", {p_id:editando.id}).then(function(){
+    dlg.close();
+    toast("Movimiento eliminado");
+    return refrescar();
+  }).catch(function(e){ toast("Error: " + e.message); });
+});
+
+/* ---------------- conexión ---------------- */
+$("c-url").value = URL_;
+$("c-key").value = KEY_;
+$("c-guardar").addEventListener("click", function(){
+  lset("quanto.url", $("c-url").value.trim().replace(/\/+$/, ""));
+  lset("quanto.key", $("c-key").value.trim());
+  location.reload();
+});
+
+/* ---------------- arranque ---------------- */
+$("f-fecha").value = hoyISO;
+
+if(!KEY_){
+  /* Sin llave no hay nada que cargar: en vez de un error de red, se pide
+     lo que falta y se abre el panel donde se pega. */
+  $("ciclo").textContent = "Falta la anon key";
+  $("aviso").innerHTML = '<div class="note"><b>Primer arranque en este dispositivo.</b> ' +
+    'Pega tu anon key en «Conexión», al final de la página, y guarda. ' +
+    'Queda en este navegador: no se manda a ningún lado.</div>';
+  ["presupuestos","serie","saldos"].forEach(function(id){
+    $(id).innerHTML = '<p class="empty">Sin conexión todavía.</p>';
+  });
+  var cfg = document.querySelector("details.cfg");
+  cfg.open = true;
+  setTimeout(function(){ cfg.scrollIntoView({block:"center", behavior:"smooth"}); }, 300);
+} else {
+cargarListas()
+  .then(cargar)
+  .catch(function(e){
+    $("ciclo").textContent = "No se pudo conectar";
+    $("aviso").innerHTML = '<div class="note"><b>Sin conexión con Supabase.</b> ' +
+      esc(e.message) + ' — revisa el Project URL y la anon key en «Conexión», ' +
+      'y que el proyecto no esté pausado.</div>';
+  });
+}
+
+/* Manifiesto por Blob: mismo origen, asi que Chrome lo acepta y la app
+   tambien se instala en Android. iOS usa los meta apple-* de arriba. */
+try{
+  var mf = new Blob([JSON.stringify({
+    name:"Libro de Lempiras", short_name:"Lempiras", display:"standalone",
+    start_url:".", scope:".", background_color:"#0D131B", theme_color:"#26406B",
+    icons:[{src:ICONO, sizes:"180x180", type:"image/png", purpose:"any"}]
+  })], {type:"application/manifest+json"});
+  var ml = document.createElement("link");
+  ml.rel = "manifest";
+  ml.href = URL.createObjectURL(mf);
+  document.head.appendChild(ml);
+}catch(e){}
+
+})();
+</script>
+</body>
+</html>
