@@ -130,8 +130,14 @@ section{margin-top:30px}
 
 /* ---- sobres de presupuesto ---- */
 .sobres{list-style:none; margin:0; padding:0}
-.sobre{padding:14px 0; border-bottom:1px solid var(--rule)}
+.sobre{border-bottom:1px solid var(--rule)}
 .sobre:last-child{border-bottom:0}
+.sobre-btn{
+  display:block; width:100%; padding:14px 2px; border:0; background:none;
+  font:inherit; color:inherit; text-align:left; cursor:pointer;
+}
+.sobre-btn:hover{background:var(--banda)}
+.sobre-btn:focus-visible{outline:2px solid var(--accent); outline-offset:-2px}
 .sobre-cab{display:flex; align-items:baseline; justify-content:space-between; gap:10px}
 .sobre-nombre{display:flex; align-items:center; gap:9px; font-weight:500; min-width:0}
 .punto{width:7px; height:7px; border-radius:50%; background:var(--c); flex:none}
@@ -149,6 +155,23 @@ section{margin-top:30px}
   font:400 11px "JetBrains Mono", monospace; font-variant-numeric:tabular-nums; color:var(--ink3);
 }
 .sobre.excedido .sobre-pct{color:var(--over)}
+/* Las metas usan .sobre sin botón dentro: llevan su propio relleno. */
+.sobre.estatico{padding:14px 0}
+
+/* ---- categorías sin límite ---- */
+.sin-limite{margin-top:16px; padding-top:14px; border-top:1px dashed var(--rule)}
+.sin-limite p{margin:0 0 10px; font-size:12.5px; color:var(--ink3)}
+.sin-limite ul{display:flex; flex-wrap:wrap; gap:7px; list-style:none; margin:0; padding:0}
+.sin-limite button{
+  display:inline-flex; align-items:center; gap:7px;
+  padding:6px 11px; border:1px dashed var(--rule); border-radius:3px;
+  background:none; color:var(--ink2); font:500 13px Archivo, sans-serif; cursor:pointer;
+}
+.sin-limite button:hover{border-style:solid; border-color:var(--accent); color:var(--ink)}
+.sin-limite button i{font-style:normal; color:var(--ink3); font-size:15px; line-height:1}
+.sin-limite button:hover i{color:var(--accent)}
+
+.hoja-nota{margin:-6px 0 16px; font-size:13px; color:var(--ink2)}
 
 /* ---- cinta del mes ---- */
 .cinta-barras{display:flex; align-items:flex-end; gap:2px; height:82px; padding:0 1px}

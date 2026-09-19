@@ -116,7 +116,68 @@ function Ritmo({ ciclo, presupuestos, gastos }) {
     </section>`;
 }
 
-function Sobre({ b, ciclo, animar }) {
+/* Ajuste del límite mensual. set_budget crea el presupuesto si la categoría
+   no tenía, y lo desactiva cuando se manda 0 — el CHECK de la tabla no
+   admite límite cero, así que "ninguno" se expresa desactivando. */
+function AjustarSobre({ cat, onCerrar, onHecho, onError }) {
+  const ref = useRef(null);
+  const nuevo = cat.limite == null;
+  const [limite, setLimite] = useState(nuevo ? "" : String(Number(cat.limite)));
+  const [ocupado, setOcupado] = useState(false);
+
+  useEffect(() => {
+    const d = ref.current;
+    d.showModal();
+    const cancelar = (e) => { e.preventDefault(); onCerrar(); };
+    d.addEventListener("cancel", cancelar);
+    return () => d.removeEventListener("cancel", cancelar);
+  }, []);
+
+  async function guardar(ev) {
+    ev.preventDefault();
+    const n = parseFloat(limite);
+    if (!(n > 0)) return onError("El límite debe ser mayor que cero");
+    setOcupado(true);
+    try { await rpc("set_budget", { p_category: cat.categoria, p_limit: n });
+          onHecho(`${cat.categoria}: límite L ${L(n)}`); }
+    catch (e) { onError(e.message); }
+    finally { setOcupado(false); }
+  }
+
+  async function quitar() {
+    if (!confirm(`¿Quitar el presupuesto de ${cat.categoria}? Los gastos se siguen registrando, pero ya no habrá límite que avisar.`)) return;
+    setOcupado(true);
+    try { await rpc("set_budget", { p_category: cat.categoria, p_limit: 0 });
+          onHecho(`${cat.categoria} ya no tiene presupuesto`); }
+    catch (e) { onError(e.message); }
+    finally { setOcupado(false); }
+  }
+
+  return html`
+    <dialog ref=${ref} class="hoja">
+      <form onSubmit=${guardar}>
+        <h2>${nuevo ? "Nuevo presupuesto para" : "Presupuesto de"} ${cat.categoria}</h2>
+        ${!nuevo && Number(cat.gastado) > 0 && html`
+          <p class="hoja-nota">Llevas L ${L(cat.gastado)} gastados en este ciclo.</p>`}
+        <label class="campo ancho monto">
+          <span>Límite mensual</span>
+          <div class="monto-caja"><i>L</i>
+            <input type="number" step="1" min="1" inputmode="decimal" autofocus
+                   value=${limite} onInput=${(e) => setLimite(e.target.value)}
+                   placeholder="0" required />
+          </div>
+        </label>
+        <div class="hoja-pie">
+          <button class="btn primario" type="submit" disabled=${ocupado}>Guardar</button>
+          <button class="btn" type="button" onClick=${onCerrar}>Cancelar</button>
+          ${!nuevo && html`
+            <button class="btn peligro" type="button" onClick=${quitar} disabled=${ocupado}>Quitar</button>`}
+        </div>
+      </form>
+    </dialog>`;
+}
+
+function Sobre({ b, ciclo, animar, onAjustar }) {
   const p = Number(b.pct_usado) || 0;
   const disp = Number(b.disponible);
   const pCiclo = (100 * ciclo.dia_actual) / ciclo.dias_total;
@@ -126,6 +187,9 @@ function Sobre({ b, ciclo, animar }) {
 
   return html`
     <li class=${`sobre ${estado}`}>
+      <button class="sobre-btn" type="button"
+              aria-label=${`Ajustar el presupuesto de ${b.categoria}`}
+              onClick=${() => onAjustar({ categoria: b.categoria, limite: b.limite, gastado: b.gastado })}>
       <div class="sobre-cab">
         <span class="sobre-nombre">
           <i class="punto" style=${`--c:${b.color || "var(--accent)"}`}></i>${b.categoria}
@@ -143,6 +207,7 @@ function Sobre({ b, ciclo, animar }) {
         <span>${L(b.gastado)} de ${L(b.limite)}</span>
         <span class="sobre-pct">${pct(p)}</span>
       </div>
+      </button>
     </li>`;
 }
 
@@ -434,6 +499,7 @@ function App() {
   const [error, setError] = useState(null);
   const [aviso, setAviso] = useState(null);
   const [editando, setEditando] = useState(null);
+  const [ajustando, setAjustando] = useState(null);
   const [animar, setAnimar] = useState(false);
   const [tema, setTema] = useState(ls("quanto.tema", ""));
   const [enRegistrar, setEnRegistrar] = useState(false);
@@ -546,14 +612,32 @@ function App() {
               ${(() => {
                 const ex = datos.presupuestos.filter((b) => Number(b.pct_usado) > 100).length;
                 if (ex) return ex === 1 ? "1 excedido" : `${ex} excedidos`;
-                return `${datos.presupuestos.length} activos`;
+                return "toca para ajustar";
               })()}
             <//>
             ${datos.presupuestos.length
               ? html`<ul class="sobres">
-                  ${datos.presupuestos.map((b) => html`<${Sobre} key=${b.categoria} b=${b} ciclo=${c} animar=${animar} />`)}
+                  ${datos.presupuestos.map((b) => html`
+                    <${Sobre} key=${b.categoria} b=${b} ciclo=${c} animar=${animar} onAjustar=${setAjustando} />`)}
                 </ul>`
-              : html`<p class="vacio">Sin presupuestos activos.</p>`}
+              : html`<p class="vacio">Ninguna categoría tiene límite todavía.</p>`}
+
+            ${(() => {
+              const sin = listas.gastos.filter((g) => !datos.presupuestos.some((b) => b.categoria === g));
+              if (!sin.length) return null;
+              return html`
+                <div class="sin-limite">
+                  <p>Sin límite — estas categorías se registran pero no avisan cuánto queda:</p>
+                  <ul>
+                    ${sin.map((g) => html`
+                      <li key=${g}>
+                        <button type="button" onClick=${() => setAjustando({ categoria: g, limite: null })}>
+                          ${g}<i>+</i>
+                        </button>
+                      </li>`)}
+                  </ul>
+                </div>`;
+            })()}
           </section>
 
           ${v2 && html`
@@ -580,7 +664,7 @@ function App() {
               <${Regla} etiqueta="Metas" />
               <ul class="sobres">
                 ${datos.metas.map((m) => html`
-                  <li class="sobre" key=${m.meta}>
+                  <li class="sobre estatico" key=${m.meta}>
                     <div class="sobre-cab">
                       <span class="sobre-nombre">${m.meta}</span>
                       <span class="sobre-restante"><${Cifra} valor=${m.ahorrado} /></span>
@@ -635,6 +719,11 @@ function App() {
         <${Corregir} mov=${editando} listas=${listas} onCerrar=${() => setEditando(null)}
                      onError=${(m) => notificar(`Error: ${m}`)}
                      onHecho=${async (m) => { setEditando(null); await tras(m); }} />`}
+
+      ${ajustando && html`
+        <${AjustarSobre} cat=${ajustando} onCerrar=${() => setAjustando(null)}
+                         onError=${(m) => notificar(`Error: ${m}`)}
+                         onHecho=${async (m) => { setAjustando(null); await tras(m); }} />`}
 
       ${aviso && html`<div class="aviso" role="status">${aviso}</div>`}
     </div>`;
