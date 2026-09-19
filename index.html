@@ -26,6 +26,7 @@
   --rule:#D7E3D8;  --ink:#0F1C16;  --ink2:#546158; --ink3:#87958B;
   --accent:#1B6B4F; --over:#A8392A; --warn:#8A6412;
   --on-accent:#FFFFFF;
+  --d1:#0C4733; --d2:#14634A; --d3:#1C8060; --d4:#2E9E78; --d5:#5FBC99; --d6:#9BD7BE;
   --sombra:0 1px 0 var(--rule), 0 10px 30px -22px rgba(15,28,22,.5);
   color-scheme:light;
 }
@@ -35,6 +36,7 @@
     --rule:#1F2E26;  --ink:#E4EDE6;  --ink2:#93A399; --ink3:#64756B;
     --accent:#56C596; --over:#E58370; --warn:#D0A24A;
     --on-accent:#07120C;
+    --d1:#A8E6CB; --d2:#7FD6B2; --d3:#57C39A; --d4:#37A87F; --d5:#248A66; --d6:#186B4F;
     --sombra:0 1px 0 var(--rule), 0 10px 30px -22px #000;
     color-scheme:dark;
   }
@@ -44,6 +46,7 @@
   --rule:#1F2E26;  --ink:#E4EDE6;  --ink2:#93A399; --ink3:#64756B;
   --accent:#56C596; --over:#E58370; --warn:#D0A24A;
   --on-accent:#07120C;
+  --d1:#A8E6CB; --d2:#7FD6B2; --d3:#57C39A; --d4:#37A87F; --d5:#248A66; --d6:#186B4F;
   --sombra:0 1px 0 var(--rule), 0 10px 30px -22px #000;
   color-scheme:dark;
 }
@@ -157,6 +160,56 @@ section{margin-top:30px}
 .sobre.excedido .sobre-pct{color:var(--over)}
 /* Las metas usan .sobre sin botón dentro: llevan su propio relleno. */
 .sobre.estatico{padding:14px 0}
+
+/* ---- desglose por rango ---- */
+.desglose{transition:opacity .2s}
+.desglose.cargando{opacity:.45}
+.rangos{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px}
+.rangos button{
+  padding:6px 12px; border:1px solid var(--rule); border-radius:3px; background:none;
+  color:var(--ink2); font:500 12.5px Archivo, sans-serif; cursor:pointer;
+}
+.rangos button.sel{background:var(--accent); border-color:var(--accent); color:var(--on-accent)}
+.rango-fechas{display:flex; gap:10px}
+.rango-fechas label{flex:1; min-width:0}
+.rango-fechas span{display:block; margin-bottom:5px; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink3)}
+.rango-fechas input{
+  width:100%; padding:8px 10px; border:1px solid var(--rule); border-radius:3px;
+  background:var(--card); color:var(--ink); font:400 13px "JetBrains Mono", monospace;
+}
+.rango-resumen{margin:18px 0 0; display:flex; flex-direction:column; gap:5px}
+.rango-resumen span{font-size:12.5px; color:var(--ink3); line-height:1.5}
+
+/* ---- dona: rampa secuencial, magnitud de oscuro a claro ---- */
+.dona{margin:16px auto 4px; max-width:260px}
+.dona svg{display:block; width:100%; height:auto}
+/* 18px y sin decimales: el hueco interior mide 110 unidades del viewBox
+   y la cifra completa a 21px se sale por los costados. */
+.dona-cifra{
+  font:700 18px "JetBrains Mono", monospace; font-variant-numeric:tabular-nums;
+  fill:var(--ink);
+}
+.dona-pie{font:400 10px Archivo, sans-serif; letter-spacing:.12em; text-transform:uppercase; fill:var(--ink3)}
+
+.leyenda{list-style:none; margin:14px 0 0; padding:0; border-top:1px solid var(--rule)}
+.leyenda li{border-bottom:1px solid var(--rule)}
+.leyenda li.cero{opacity:.55}
+/* Colocación explícita en las dos filas: si se deja al flujo automático,
+   el porcentaje se va a una fila suelta. */
+.leyenda button{
+  display:grid; grid-template-columns:auto 1fr auto; gap:1px 10px; align-items:center;
+  width:100%; padding:10px 2px; border:0; background:none; color:inherit;
+  font:inherit; text-align:left; cursor:pointer;
+}
+.leyenda button:hover{background:var(--banda)}
+.leyenda button:focus-visible{outline:2px solid var(--accent); outline-offset:-2px}
+.leyenda .punto{grid-column:1; grid-row:1}
+.leyenda-nombre{grid-column:2; grid-row:1; font-weight:500}
+.leyenda-monto{grid-column:3; grid-row:1; font-size:14px; font-weight:500; white-space:nowrap; text-align:right}
+.leyenda-lim{grid-column:2; grid-row:2; font-size:11px; color:var(--ink3)}
+.leyenda-pct{grid-column:3; grid-row:2; font-size:11px; color:var(--ink3); text-align:right}
+.exceso{margin-left:6px; color:var(--over); font-weight:600}
+.alerta code{font-family:"JetBrains Mono",monospace; font-size:12px; background:var(--hundido); padding:1px 5px; border-radius:3px}
 
 /* ---- categorías sin límite ---- */
 .sin-limite{margin-top:16px; padding-top:14px; border-top:1px dashed var(--rule)}

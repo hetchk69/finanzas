@@ -270,6 +270,137 @@ function Esqueleto({ filas = 3 }) {
   </div>`;
 }
 
+/* ---------- desglose por categoría en un rango ---------- */
+const iso = (d) => d.toLocaleDateString("en-CA");
+function mes(desplazamiento = 0) {
+  const n = new Date();
+  return {
+    desde: iso(new Date(n.getFullYear(), n.getMonth() + desplazamiento, 1)),
+    hasta: iso(new Date(n.getFullYear(), n.getMonth() + desplazamiento + 1, 0)),
+  };
+}
+function ultimosDias(n) {
+  const h = new Date();
+  const d = new Date(); d.setDate(d.getDate() - (n - 1));
+  return { desde: iso(d), hasta: iso(h) };
+}
+
+/* La dona codifica MAGNITUD, no identidad: una rampa secuencial de un solo
+   tono, de oscuro a claro según el monto. Es la codificación correcta para
+   magnitud, es monótona por construcción y no tiene el problema de
+   distinguir diez matices. La identidad la llevan la leyenda y las
+   etiquetas, donde cada categoría conserva su color propio. */
+const RAMPA = 6;
+
+function Dona({ cats, total }) {
+  const conGasto = cats.filter((c) => Number(c.total) > 0);
+  if (!conGasto.length || !total) {
+    return html`<p class="vacio">Sin gastos en este rango.</p>`;
+  }
+  const top = conGasto.slice(0, RAMPA);
+  const resto = conGasto.slice(RAMPA);
+  const restoTotal = resto.reduce((a, c) => a + Number(c.total), 0);
+  const segs = [
+    ...top.map((c, i) => ({ nombre: c.categoria, monto: Number(c.total), relleno: `var(--d${i + 1})` })),
+    ...(restoTotal > 0
+      ? [{ nombre: `Resto (${resto.length})`, monto: restoTotal, relleno: "url(#tramado)" }]
+      : []),
+  ];
+
+  const R = 68, GROSOR = 26, CIRC = 2 * Math.PI * R, HUECO = 3;
+  let acumulado = 0;
+  const arcos = segs.map((s) => {
+    const frac = s.monto / total;
+    const largo = Math.max(CIRC * frac - HUECO, 0.8);
+    const arco = html`
+      <circle key=${s.nombre} cx="100" cy="100" r=${R} fill="none"
+              stroke=${s.relleno} stroke-width=${GROSOR}
+              stroke-dasharray=${`${largo} ${CIRC - largo}`}
+              stroke-dashoffset=${-acumulado}>
+        <title>${s.nombre}: L ${L(s.monto)} · ${pct((100 * s.monto) / total)}</title>
+      </circle>`;
+    acumulado += CIRC * frac;
+    return arco;
+  });
+
+  return html`
+    <div class="dona">
+      <svg viewBox="0 0 200 200" role="img"
+           aria-label=${`Gasto por categoría. Total L ${L(total)}. Mayor: ${segs[0].nombre}, ${pct((100 * segs[0].monto) / total)}`}>
+        <defs>
+          <pattern id="tramado" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <rect width="7" height="7" fill="var(--hundido)"></rect>
+            <line x1="0" y1="0" x2="0" y2="7" stroke="var(--ink3)" stroke-width="2.5"></line>
+          </pattern>
+        </defs>
+        <g transform="rotate(-90 100 100)">${arcos}</g>
+        <text x="100" y="94" text-anchor="middle" class="dona-cifra">L ${nf0.format(total)}</text>
+        <text x="100" y="112" text-anchor="middle" class="dona-pie">gastado</text>
+      </svg>
+    </div>`;
+}
+
+function Desglose({ des, cargando, onRango, onAjustar }) {
+  if (!des) return html`<${Esqueleto} filas=${2} />`;
+  const total = Number(des.totales.gastos) || 0;
+  const r = des.rango;
+  const presets = [
+    ["Este mes", mes(0)],
+    ["Mes pasado", mes(-1)],
+    ["30 días", ultimosDias(30)],
+    ["Este año", { desde: `${new Date().getFullYear()}-01-01`, hasta: `${new Date().getFullYear()}-12-31` }],
+  ];
+  const activo = (p) => p.desde === r.desde && p.hasta === r.hasta;
+
+  return html`
+    <div class=${`desglose ${cargando ? "cargando" : ""}`}>
+      <div class="rangos">
+        ${presets.map(([n, p]) => html`
+          <button key=${n} type="button" class=${activo(p) ? "sel" : ""}
+                  aria-pressed=${activo(p)} onClick=${() => onRango(p)}>${n}</button>`)}
+      </div>
+      <div class="rango-fechas">
+        <label><span>Desde</span>
+          <input type="date" value=${r.desde} onChange=${(e) => onRango({ desde: e.target.value, hasta: r.hasta })} />
+        </label>
+        <label><span>Hasta</span>
+          <input type="date" value=${r.hasta} onChange=${(e) => onRango({ desde: r.desde, hasta: e.target.value })} />
+        </label>
+      </div>
+
+      <p class="rango-resumen">
+        <b><${Cifra} valor=${total} tam="gr" /></b>
+        <span>en ${r.dias} ${r.dias === 1 ? "día" : "días"} · ${des.totales.movimientos} movimientos
+              · promedio L ${L(total / Math.max(r.dias, 1))} por día</span>
+      </p>
+
+      <${Dona} cats=${des.categorias} total=${total} />
+
+      <ul class="leyenda">
+        ${des.categorias.map((c) => {
+          const t = Number(c.total);
+          const p = total ? (100 * t) / total : 0;
+          const lim = c.limite == null ? null : Number(c.limite);
+          return html`
+            <li key=${c.categoria} class=${t > 0 ? "" : "cero"}>
+              <button type="button"
+                      aria-label=${`Ajustar el límite de ${c.categoria}`}
+                      onClick=${() => onAjustar({ categoria: c.categoria, limite: c.limite, gastado: c.total })}>
+                <i class="punto" style=${`--c:${c.color || "var(--ink3)"}`}></i>
+                <span class="leyenda-nombre">${c.categoria}</span>
+                <span class="leyenda-lim">
+                  ${lim == null ? "sin límite" : `de ${L(lim)}`}
+                  ${lim != null && t > lim ? html`<b class="exceso">excedido</b>` : null}
+                </span>
+                <span class="leyenda-monto num">${L(t)}</span>
+                <span class="leyenda-pct num">${total ? pct(p) : "—"}</span>
+              </button>
+            </li>`;
+        })}
+      </ul>
+    </div>`;
+}
+
 /* ---------- captura ---------- */
 function Captura({ listas, onHecho, onError, refMonto }) {
   const [tipo, setTipo] = useState("gasto");
@@ -500,6 +631,10 @@ function App() {
   const [aviso, setAviso] = useState(null);
   const [editando, setEditando] = useState(null);
   const [ajustando, setAjustando] = useState(null);
+  const [des, setDes] = useState(null);
+  const [rango, setRango] = useState(mes(0));
+  const [v3, setV3] = useState(true);
+  const [cargandoDes, setCargandoDes] = useState(false);
   const [animar, setAnimar] = useState(false);
   const [tema, setTema] = useState(ls("quanto.tema", ""));
   const [enRegistrar, setEnRegistrar] = useState(false);
@@ -568,7 +703,22 @@ function App() {
        falso positivo y el botón arrancaría oculto hasta el primer scroll. */
   }, [listo, datos]);
 
-  const tras = useCallback(async (msg) => { notificar(msg); await cargar(); }, [cargar]);
+  const cargarDesglose = useCallback(async (r) => {
+    setCargandoDes(true);
+    try {
+      setDes(await rpc("desglose", { p_desde: r.desde, p_hasta: r.hasta }));
+      setV3(true);
+    } catch (e) {
+      if (faltaV2(e)) setV3(false); else notificar(`Error: ${e.message}`);
+    } finally { setCargandoDes(false); }
+  }, [notificar]);
+
+  useEffect(() => { if (listo) cargarDesglose(rango); }, [listo, rango.desde, rango.hasta]);
+
+  const tras = useCallback(async (msg) => {
+    notificar(msg);
+    await Promise.all([cargar(), cargarDesglose(rango)]);
+  }, [cargar, cargarDesglose, rango.desde, rango.hasta]);
 
   async function deshacer() {
     try {
@@ -638,6 +788,15 @@ function App() {
                   </ul>
                 </div>`;
             })()}
+          </section>
+
+          <section>
+            <${Regla} etiqueta="Desglose">${des ? `${des.rango.desde} a ${des.rango.hasta}` : ""}<//>
+            ${v3
+              ? html`<${Desglose} des=${des} cargando=${cargandoDes}
+                                  onRango=${setRango} onAjustar=${setAjustando} />`
+              : html`<p class="alerta"><b>Falta aplicar quanto_v3.sql.</b>
+                  El desglose por rango necesita la función <code>desglose()</code>.</p>`}
           </section>
 
           ${v2 && html`
