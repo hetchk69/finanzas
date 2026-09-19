@@ -292,29 +292,32 @@ function ultimosDias(n) {
    etiquetas, donde cada categoría conserva su color propio. */
 const RAMPA = 6;
 
-function Dona({ cats, total }) {
-  const conGasto = cats.filter((c) => Number(c.total) > 0);
-  if (!conGasto.length || !total) {
-    return html`<p class="vacio">Sin gastos en este rango.</p>`;
-  }
-  const top = conGasto.slice(0, RAMPA);
-  const resto = conGasto.slice(RAMPA);
-  const restoTotal = resto.reduce((a, c) => a + Number(c.total), 0);
-  const segs = [
-    ...top.map((c, i) => ({ nombre: c.categoria, monto: Number(c.total), relleno: `var(--d${i + 1})` })),
-    ...(restoTotal > 0
-      ? [{ nombre: `Resto (${resto.length})`, monto: restoTotal, relleno: "url(#tramado)" }]
-      : []),
-  ];
+/* Pliega la cola en "Resto": más allá de seis porciones la dona deja de
+   leerse, y ningún juego de tonos separa tantas categorías. */
+function plegar(items, n = RAMPA) {
+  const vivos = items
+    .filter((i) => Number(i.monto) > 0)
+    .sort((a, b) => Number(b.monto) - Number(a.monto));
+  const cola = vivos.slice(n);
+  const suma = cola.reduce((a, i) => a + Number(i.monto), 0);
+  return suma > 0
+    ? [...vivos.slice(0, n), { nombre: `Resto (${cola.length})`, monto: suma, resto: true }]
+    : vivos;
+}
+
+function Dona({ segmentos, etiqueta, pie, vacio = "Sin datos en este rango." }) {
+  const total = segmentos.reduce((a, s) => a + Number(s.monto), 0);
+  if (!total) return html`<p class="vacio">${vacio}</p>`;
 
   const R = 68, GROSOR = 26, CIRC = 2 * Math.PI * R, HUECO = 3;
   let acumulado = 0;
-  const arcos = segs.map((s) => {
-    const frac = s.monto / total;
+  const arcos = segmentos.map((s, i) => {
+    const frac = Number(s.monto) / total;
     const largo = Math.max(CIRC * frac - HUECO, 0.8);
+    const trazo = s.resto ? "url(#tramado)" : s.color || `var(--d${Math.min(i + 1, RAMPA)})`;
     const arco = html`
       <circle key=${s.nombre} cx="100" cy="100" r=${R} fill="none"
-              stroke=${s.relleno} stroke-width=${GROSOR}
+              stroke=${trazo} stroke-width=${GROSOR}
               stroke-dasharray=${`${largo} ${CIRC - largo}`}
               stroke-dashoffset=${-acumulado}>
         <title>${s.nombre}: L ${L(s.monto)} · ${pct((100 * s.monto) / total)}</title>
@@ -323,27 +326,78 @@ function Dona({ cats, total }) {
     return arco;
   });
 
+  const mayor = segmentos.reduce((a, s) => (Number(s.monto) > Number(a.monto) ? s : a));
   return html`
     <div class="dona">
       <svg viewBox="0 0 200 200" role="img"
-           aria-label=${`Gasto por categoría. Total L ${L(total)}. Mayor: ${segs[0].nombre}, ${pct((100 * segs[0].monto) / total)}`}>
-        <defs>
-          <pattern id="tramado" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-            <rect width="7" height="7" fill="var(--hundido)"></rect>
-            <line x1="0" y1="0" x2="0" y2="7" stroke="var(--ink3)" stroke-width="2.5"></line>
-          </pattern>
-        </defs>
+           aria-label=${`${pie}. Total L ${L(total)}. Mayor: ${mayor.nombre}, ${pct((100 * mayor.monto) / total)}`}>
         <g transform="rotate(-90 100 100)">${arcos}</g>
-        <text x="100" y="94" text-anchor="middle" class="dona-cifra">L ${nf0.format(total)}</text>
-        <text x="100" y="112" text-anchor="middle" class="dona-pie">gastado</text>
+        <text x="100" y="94" text-anchor="middle" class="dona-cifra">L ${nf0.format(etiqueta ?? total)}</text>
+        <text x="100" y="112" text-anchor="middle" class="dona-pie">${pie}</text>
       </svg>
     </div>`;
 }
 
-function Desglose({ des, cargando, onRango, onAjustar }) {
+/* Una sola definición del tramado para toda la página: los id de SVG son
+   globales del documento y repetirlos en cada dona los duplica. */
+function DefsSVG() {
+  return html`
+    <svg width="0" height="0" aria-hidden="true" style="position:absolute">
+      <defs>
+        <pattern id="tramado" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect width="7" height="7" fill="var(--hundido)"></rect>
+          <line x1="0" y1="0" x2="0" y2="7" stroke="var(--ink3)" stroke-width="2.5"></line>
+        </pattern>
+      </defs>
+    </svg>`;
+}
+
+function Tarjeta({ titulo, nota, children }) {
+  return html`
+    <figure class="grafico">
+      <figcaption>
+        <b>${titulo}</b>
+        ${nota ? html`<span>${nota}</span>` : null}
+      </figcaption>
+      ${children}
+    </figure>`;
+}
+
+function Graficos({ des, presupuestos, cargando, onRango, onAjustar }) {
   if (!des) return html`<${Esqueleto} filas=${2} />`;
   const total = Number(des.totales.gastos) || 0;
   const r = des.rango;
+
+  const porCategoria = plegar(
+    des.categorias.map((c) => ({ nombre: c.categoria, monto: Number(c.total) }))
+  );
+
+  /* El presupuesto vive en el ciclo, no en el rango elegido: se rotula
+     así para no mezclar dos ventanas de tiempo en la misma pantalla. */
+  const limTotal = presupuestos.reduce((a, b) => a + Number(b.limite), 0);
+  const usado = presupuestos.reduce((a, b) => a + Number(b.gastado), 0);
+  const excedido = usado > limTotal;
+  const segPresupuesto = limTotal
+    ? [
+        { nombre: "Gastado", monto: Math.min(usado, limTotal),
+          color: excedido ? "var(--over)" : "var(--d2)" },
+        { nombre: "Disponible", monto: Math.max(limTotal - usado, 0), color: "var(--d6)" },
+      ]
+    : [];
+
+  const conLim = des.categorias.filter((c) => c.limite != null)
+                               .reduce((a, c) => a + Number(c.total), 0);
+  const sinLim = des.categorias.filter((c) => c.limite == null)
+                               .reduce((a, c) => a + Number(c.total), 0);
+  const segVigilado = [
+    { nombre: "Con límite", monto: conLim, color: "var(--d2)" },
+    { nombre: "Sin límite", monto: sinLim, resto: true },
+  ];
+
+  /* Solo si se aplicó quanto_v4.sql; si no, esta dona simplemente no está. */
+  const porCuenta = Array.isArray(des.cuentas)
+    ? plegar(des.cuentas.map((c) => ({ nombre: c.cuenta, monto: Number(c.total) })))
+    : null;
   const presets = [
     ["Este mes", mes(0)],
     ["Mes pasado", mes(-1)],
@@ -374,8 +428,33 @@ function Desglose({ des, cargando, onRango, onAjustar }) {
               · promedio L ${L(total / Math.max(r.dias, 1))} por día</span>
       </p>
 
-      <${Dona} cats=${des.categorias} total=${total} />
+      <div class="graficos">
+        <${Tarjeta} titulo="Gasto por categoría" nota=${`${r.desde} a ${r.hasta}`}>
+          <${Dona} segmentos=${porCategoria} pie="gastado"
+                   vacio="Sin gastos en este rango. Registra uno y aparece aquí." />
+        <//>
 
+        <${Tarjeta} titulo="Presupuesto del ciclo"
+                    nota=${excedido ? "excedido" : `de L ${L(limTotal)}`}>
+          <${Dona} segmentos=${segPresupuesto} etiqueta=${Math.max(limTotal - usado, 0)}
+                   pie="disponible"
+                   vacio="Ninguna categoría tiene límite." />
+        <//>
+
+        <${Tarjeta} titulo="¿Cuánto se está vigilando?"
+                    nota="gasto en categorías con límite">
+          <${Dona} segmentos=${segVigilado} pie="gastado"
+                   vacio="Sin gastos en este rango." />
+        <//>
+
+        ${porCuenta && html`
+          <${Tarjeta} titulo="Gasto por cuenta" nota=${`${r.desde} a ${r.hasta}`}>
+            <${Dona} segmentos=${porCuenta} pie="gastado"
+                     vacio="Sin gastos en este rango." />
+          <//>`}
+      </div>
+
+      <${Regla} etiqueta="Por categoría">toca para ajustar el límite<//>
       <ul class="leyenda">
         ${des.categorias.map((c) => {
           const t = Number(c.total);
@@ -635,6 +714,7 @@ function App() {
   const [rango, setRango] = useState(mes(0));
   const [v3, setV3] = useState(true);
   const [cargandoDes, setCargandoDes] = useState(false);
+  const [vista, setVista] = useState(ls("quanto.vista", "libro"));
   const [animar, setAnimar] = useState(false);
   const [tema, setTema] = useState(ls("quanto.tema", ""));
   const [enRegistrar, setEnRegistrar] = useState(false);
@@ -683,6 +763,8 @@ function App() {
     else document.documentElement.removeAttribute("data-theme");
     lset("quanto.tema", tema);
   }, [tema]);
+
+  useEffect(() => { lset("quanto.vista", vista); }, [vista]);
 
   /* El botón fijo se aparta cuando el formulario ya está a la vista: si no,
      tapa la cifra del sobre que queda justo debajo. Se mide la posición en
@@ -733,6 +815,7 @@ function App() {
 
   return html`
     <div class="hoja-libro">
+      <${DefsSVG} />
       <header class="cabecera">
         <div>
           <h1>Libro de Lempiras</h1>
@@ -748,11 +831,23 @@ function App() {
         </button>
       </header>
 
+      <nav class="vistas" role="tablist">
+        ${[["libro", "Libro"], ["graficos", "Gráficos"]].map(([id, n]) => html`
+          <button key=${id} type="button" role="tab" aria-selected=${vista === id}
+                  onClick=${() => setVista(id)}>${n}</button>`)}
+      </nav>
+
       ${error && html`<p class="alerta" role="alert"><b>No se pudo leer el libro.</b> ${error}</p>`}
       ${!v2 && html`<p class="alerta">
         <b>Falta aplicar quanto_v2.sql.</b> Sin él no hay asientos, metas ni gasto diario.</p>`}
 
-      ${!datos
+      ${vista === "graficos" && (v3
+        ? html`<${Graficos} des=${des} presupuestos=${datos ? datos.presupuestos : []}
+                            cargando=${cargandoDes} onRango=${setRango} onAjustar=${setAjustando} />`
+        : html`<p class="alerta"><b>Falta aplicar quanto_v3.sql.</b>
+            Los gráficos por rango necesitan la función <code>desglose()</code>.</p>`)}
+
+      ${vista === "libro" && (!datos
         ? html`<${Esqueleto} filas=${4} />`
         : html`
           <${Ritmo} ciclo=${c} presupuestos=${datos.presupuestos} gastos=${datos.resumen.gastos} />
@@ -788,15 +883,6 @@ function App() {
                   </ul>
                 </div>`;
             })()}
-          </section>
-
-          <section>
-            <${Regla} etiqueta="Desglose">${des ? `${des.rango.desde} a ${des.rango.hasta}` : ""}<//>
-            ${v3
-              ? html`<${Desglose} des=${des} cargando=${cargandoDes}
-                                  onRango=${setRango} onAjustar=${setAjustando} />`
-              : html`<p class="alerta"><b>Falta aplicar quanto_v3.sql.</b>
-                  El desglose por rango necesita la función <code>desglose()</code>.</p>`}
           </section>
 
           ${v2 && html`
@@ -850,14 +936,14 @@ function App() {
                   </ul>`
                 : html`<p class="vacio">El libro está en blanco. Registra el primer movimiento abajo.</p>`}
             </section>`}
-        `}
 
-      <section id="registrar">
-        <${Regla} etiqueta="Registrar" />
-        <${Captura} listas=${listas} refMonto=${refMonto}
-                    onHecho=${tras} onError=${(m) => notificar(`Error: ${m}`)} />
-        <button class="btn sutil" type="button" onClick=${deshacer}>Deshacer el último</button>
-      </section>
+          <section id="registrar">
+            <${Regla} etiqueta="Registrar" />
+            <${Captura} listas=${listas} refMonto=${refMonto}
+                        onHecho=${tras} onError=${(m) => notificar(`Error: ${m}`)} />
+            <button class="btn sutil" type="button" onClick=${deshacer}>Deshacer el último</button>
+          </section>
+        `)}
 
       <details class="conexion">
         <summary>Conexión</summary>
@@ -869,10 +955,11 @@ function App() {
         }}>Olvidar la llave</button>
       </details>
 
+      ${vista === "libro" && html`
       <button class=${`fab ${enRegistrar ? "oculto" : ""}`} type="button" onClick=${() => {
         document.getElementById("registrar").scrollIntoView({ behavior: "smooth", block: "start" });
         setTimeout(() => refMonto.current?.focus(), 400);
-      }}>Registrar</button>
+      }}>Registrar</button>`}
 
       ${editando && html`
         <${Corregir} mov=${editando} listas=${listas} onCerrar=${() => setEditando(null)}

@@ -135,9 +135,31 @@ presupuesto debe responder, y la primera versión no la respondía nunca.
 Tipografías: **Archivo** y **JetBrains Mono**, con cifras tabulares y el signo de
 lempira subordinado al número.
 
-Muestra el ciclo, el ritmo, los presupuestos, el gasto por día, los saldos, las
-metas y el libro de asientos. Tocar un asiento lo abre para corregir o eliminar.
-También registra gasto, ingreso y transferencia, y deshace el último.
+### Dos vistas
+
+**Libro** — el ciclo, el ritmo, los presupuestos, el gasto por día, los saldos,
+las metas y el libro de asientos. Tocar un asiento lo abre para corregir o
+eliminar; tocar un sobre abre su límite. También registra gasto, ingreso y
+transferencia, y deshace el último.
+
+**Gráficos** — un rango de fechas (por defecto el mes calendario) y cuatro donas:
+gasto por categoría, presupuesto del ciclo usado contra disponible, cuánto del
+gasto cae en categorías vigiladas, y gasto por cuenta. Abajo, el desglose por
+categoría donde cada fila abre su límite.
+
+### Por qué las donas no usan el color de cada categoría
+
+Se validó la paleta con herramienta en vez de a ojo. La de la base **falla**:
+Combustible y Transporte dan ΔE 11.3 en visión normal — por debajo de 15, difíciles
+de distinguir incluso sin daltonismo. Y no hay reemplazo: diez tonos categóricos
+mutuamente separables no existen; ni siete equiespaciados en el espacio perceptual
+lo logran.
+
+Así que las donas **codifican magnitud, no identidad**: una rampa secuencial de un
+solo verde, de oscuro a claro según el monto, monótona por construcción. La
+identidad la llevan la leyenda y las etiquetas, donde cada categoría sí conserva su
+color. El sobrante va tramado en vez de gris, porque un neutro de baja saturación
+siempre queda cerca de algún tono.
 
 Si `quanto_v2.sql` no está aplicado, **no se rompe**: lo detecta, avisa y sigue
 sirviendo con lo que expone el script base.

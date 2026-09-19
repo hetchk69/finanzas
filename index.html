@@ -161,6 +161,28 @@ section{margin-top:30px}
 /* Las metas usan .sobre sin botón dentro: llevan su propio relleno. */
 .sobre.estatico{padding:14px 0}
 
+/* ---- vistas: libro / gráficos ---- */
+.vistas{display:flex; margin-top:18px; border-bottom:1px solid var(--rule)}
+.vistas button{
+  flex:1; padding:10px 4px; border:0; border-bottom:2px solid transparent;
+  background:none; color:var(--ink3); cursor:pointer;
+  font:600 13px Archivo, sans-serif; letter-spacing:.04em;
+}
+.vistas button[aria-selected="true"]{color:var(--ink); border-bottom-color:var(--accent)}
+
+/* ---- rejilla de gráficos ---- */
+.graficos{display:grid; gap:14px; margin-top:20px}
+@media (min-width:620px){ .graficos{grid-template-columns:1fr 1fr} }
+.grafico{
+  margin:0; padding:16px; border:1px solid var(--rule); border-radius:3px;
+  background:var(--card); box-shadow:var(--sombra);
+}
+.grafico figcaption{display:flex; flex-direction:column; gap:3px}
+.grafico figcaption b{font-size:14px; font-weight:600; letter-spacing:-.01em}
+.grafico figcaption span{font:400 11px "JetBrains Mono", monospace; color:var(--ink3)}
+.grafico .dona{margin:8px auto 0; max-width:208px}
+.grafico .vacio{padding:34px 0; text-align:center; font-size:13px}
+
 /* ---- desglose por rango ---- */
 .desglose{transition:opacity .2s}
 .desglose.cargando{opacity:.45}
