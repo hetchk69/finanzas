@@ -117,10 +117,27 @@ al SQL Editor por un presupuesto o el día de pago.
 
 ## 2. El tablero
 
-Un archivo sin dependencias salvo las tipografías. Muestra el ciclo con barra de
-avance, neto/ingresos/gastos, presupuestos con medidor y estado, gasto por día,
-saldos, metas y el libro de movimientos. Tocar un movimiento lo abre para corregir
-o eliminar. También registra gasto, ingreso y transferencia, y deshace el último.
+`index.html` + `app.js`, construido con **Preact + htm incrustados** (12 KB, sin
+paso de compilación y sin CDN en tiempo de ejecución). Componentes, hooks y listas
+con key; la única dependencia externa son las tipografías.
+
+**El diseño se ancla en el papel contable de columnas**: fondo apenas verdoso,
+renglones reglados en verde-gris y tinta roja para el sobregiro. Es el artefacto
+del oficio, coherente con la tesis del documento original — «no es una app de
+finanzas, es un libro contable manual».
+
+**El elemento firma es el medidor de ritmo.** Pone dos marcas en una misma escala:
+dónde va el ciclo y dónde va el gasto. Si el gasto adelanta al calendario, pasa a
+tinta roja. Cada sobre de presupuesto lleva además su propia marca de ritmo, así
+que no solo dice cuánto queda sino si vas adelantado. Esa es la pregunta que un
+presupuesto debe responder, y la primera versión no la respondía nunca.
+
+Tipografías: **Archivo** y **JetBrains Mono**, con cifras tabulares y el signo de
+lempira subordinado al número.
+
+Muestra el ciclo, el ritmo, los presupuestos, el gasto por día, los saldos, las
+metas y el libro de asientos. Tocar un asiento lo abre para corregir o eliminar.
+También registra gasto, ingreso y transferencia, y deshace el último.
 
 Si `quanto_v2.sql` no está aplicado, **no se rompe**: lo detecta, avisa y sigue
 sirviendo con lo que expone el script base.
