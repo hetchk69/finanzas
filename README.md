@@ -3,8 +3,28 @@
 Réplica casera de [Quanto](https://quanto.app/) sobre Supabase, en lempiras.
 Captura por Apple Shortcuts, lectura por un tablero web.
 
+**En vivo:** <https://hetchk69.github.io/finanzas/>
+
 **Este proyecto es independiente del portal de DIGER.** Carpeta hermana, git
 propio, cero archivos compartidos.
+
+## Por qué el repo es público
+
+Porque en GitHub «privado» no compra privacidad aquí:
+
+- **Pages sobre repo privado exige GitHub Pro** ($4/mes). En plan gratis, solo
+  repos públicos.
+- Y aun pagando, **el sitio publicado sigue siendo público**: restringir el acceso
+  al sitio de Pages es exclusivo de Enterprise Cloud. El repo privado solo
+  escondería el código fuente, no la URL.
+
+Como el código no lleva ninguna anon key, esconderlo no protege nada. Lo que
+protege de verdad son los permisos de las funciones RPC — por eso importa aplicar
+`quanto_v2.sql`.
+
+Si algún día quieres el sitio de verdad tras una puerta: **Cloudflare Pages +
+Cloudflare Access** da login por correo gratis hasta 50 usuarios. Es la única vía
+gratuita a un sitio realmente privado.
 
 | Archivo | Qué es |
 |---|---|
@@ -41,8 +61,12 @@ en `transactions`, `accounts`, `settings` y todas las vistas.
 ### Falta hacer
 
 1. **Aplicar `quanto_v2.sql`** (SQL Editor → pegar → Run)
-2. **Publicar `index.html`** y añadirlo a la pantalla de inicio
-3. **Armar los atajos** siguiendo `ATAJOS.md`
+2. **Armar los atajos** siguiendo `ATAJOS.md`
+
+Publicar el tablero ya está hecho: vive en
+<https://hetchk69.github.io/finanzas/> y se verificó contra el proyecto real
+(cargó ciclo, presupuestos y saldos). Falta añadirlo a la pantalla de inicio del
+teléfono — Safari → Compartir → Añadir a pantalla de inicio.
 
 ---
 
