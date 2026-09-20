@@ -157,7 +157,10 @@ mutuamente separables no existen; ni siete equiespaciados en el espacio perceptu
 lo logran.
 
 Así que las donas **codifican magnitud, no identidad**: una rampa secuencial de un
-solo verde, de oscuro a claro según el monto, monótona por construcción. La
+solo azul, de oscuro a claro según el monto, monótona por construcción (verificada,
+no supuesta). Va con el rango recortado a propósito: estirarla hasta el azul pálido
+deja el paso más claro en 1.35 de contraste sobre tarjeta blanca, o sea invisible.
+Debajo de los arcos hay una pista teñida para que los pasos claros tengan borde. La
 identidad la llevan la leyenda y las etiquetas, donde cada categoría sí conserva su
 color. El sobrante va tramado en vez de gris, porque un neutro de baja saturación
 siempre queda cerca de algún tono.
