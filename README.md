@@ -28,8 +28,11 @@ gratuita a un sitio realmente privado.
 
 | Archivo | Qué es |
 |---|---|
-| `index.html` | El tablero. Un solo archivo, instalable en la pantalla de inicio |
-| `quanto_v2.sql` | Complemento a pegar en el SQL Editor de Supabase |
+| `index.html` | El tablero: estilos, Preact+htm incrustados y el punto de montaje |
+| `app.js` | La aplicación: componentes, hooks y las llamadas RPC |
+| `quanto_v2.sql` | Apéndice B — seguridad, metas, `dashboard()`, edición, ajustes |
+| `quanto_v3.sql` | Apéndice C — `desglose()` por categoría en un rango de fechas |
+| `quanto_v4.sql` | Apéndice D — agrega `cuentas` a `desglose()`, para la cuarta dona |
 | `ATAJOS.md` | Hoja de armado de los atajos de iPhone |
 | `.nojekyll` | Que GitHub Pages sirva los archivos tal cual |
 
