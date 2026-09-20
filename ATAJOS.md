@@ -161,7 +161,7 @@ primera semana, y sin deshacer se abandona el sistema.
 
 Aquí el bucle sí es aceptable: son cinco presupuestos, no cientos de movimientos.
 
-Con `quanto_v2.sql` aplicado puedes apuntar a `.../rpc/dashboard`, que además trae
+Con el apéndice B aplicado puedes apuntar a `.../rpc/dashboard`, que además trae
 saldos, metas, serie diaria y los últimos movimientos en la misma llamada.
 
 ---

@@ -399,7 +399,7 @@ function Graficos({ des, presupuestos, cargando, onRango, onAjustar }) {
     { nombre: "Sin límite", monto: sinLim, resto: true },
   ];
 
-  /* Solo si se aplicó quanto_v4.sql; si no, esta dona simplemente no está. */
+  /* Solo si se aplicó el apéndice D; si no, esta dona simplemente no está. */
   const porCuenta = Array.isArray(des.cuentas)
     ? plegar(des.cuentas.map((c) => ({ nombre: c.cuenta, monto: Number(c.total) })))
     : null;
@@ -833,12 +833,12 @@ function App() {
 
       ${error && html`<p class="alerta" role="alert"><b>No se pudo leer el libro.</b> ${error}</p>`}
       ${!v2 && html`<p class="alerta">
-        <b>Falta aplicar quanto_v2.sql.</b> Sin él no hay asientos, metas ni gasto diario.</p>`}
+        <b>Falta aplicar el apéndice B.</b> Sin él no hay asientos, metas ni gasto diario.</p>`}
 
       ${vista === "graficos" && (v3
         ? html`<${Graficos} des=${des} presupuestos=${datos ? datos.presupuestos : []}
                             cargando=${cargandoDes} onRango=${setRango} onAjustar=${setAjustando} />`
-        : html`<p class="alerta"><b>Falta aplicar quanto_v3.sql.</b>
+        : html`<p class="alerta"><b>Falta aplicar el apéndice C.</b>
             Los gráficos por rango necesitan la función <code>desglose()</code>.</p>`)}
 
       ${vista === "libro" && (!datos

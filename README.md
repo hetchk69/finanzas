@@ -20,7 +20,7 @@ Porque en GitHub «privado» no compra privacidad aquí:
 
 Como el código no lleva ninguna anon key, esconderlo no protege nada. Lo que
 protege de verdad son los permisos de las funciones RPC — por eso importa aplicar
-`quanto_v2.sql`.
+el apéndice B.
 
 Si algún día quieres el sitio de verdad tras una puerta: **Cloudflare Pages +
 Cloudflare Access** da login por correo gratis hasta 50 usuarios. Es la única vía
@@ -30,9 +30,8 @@ gratuita a un sitio realmente privado.
 |---|---|
 | `index.html` | El tablero: estilos, Preact+htm incrustados y el punto de montaje |
 | `app.js` | La aplicación: componentes, hooks y las llamadas RPC |
-| `quanto_v2.sql` | Apéndice B — seguridad, metas, `dashboard()`, edición, ajustes |
-| `quanto_v3.sql` | Apéndice C — `desglose()` por categoría en un rango de fechas |
-| `quanto_v4.sql` | Apéndice D — agrega `cuentas` a `desglose()`, para la cuarta dona |
+| `supabase/migrations/` | Los apéndices, versionados y en orden de aplicación |
+| `supabase/config.toml` | Apunta el CLI al proyecto de la nube |
 | `ATAJOS.md` | Hoja de armado de los atajos de iPhone |
 | `.nojekyll` | Que GitHub Pages sirva los archivos tal cual |
 
@@ -61,10 +60,12 @@ movimientos:
 El blindaje de tablas y vistas es correcto: `anon` recibe `42501 permission denied`
 en `transactions`, `accounts`, `settings` y todas las vistas.
 
+El apéndice B está aplicado: la base tiene la tabla `goals` y el índice
+`idx_tx_fecha_creacion`, que solo salen de ahí.
+
 ### Falta hacer
 
-1. **Aplicar `quanto_v2.sql`** (SQL Editor → pegar → Run)
-2. **Armar los atajos** siguiendo `ATAJOS.md`
+1. **Armar los atajos** siguiendo `ATAJOS.md`
 
 Publicar el tablero ya está hecho: vive en
 <https://hetchk69.github.io/finanzas/> y se verificó contra el proyecto real
@@ -73,7 +74,34 @@ teléfono — Safari → Compartir → Añadir a pantalla de inicio.
 
 ---
 
-## 1. `quanto_v2.sql`
+## 0. El esquema y las migraciones
+
+Los apéndices viven en `supabase/migrations/`, con el nombre en orden de
+aplicación. Se aplican con el CLI, sin Docker y sin la contraseña de Postgres —
+el CLI se aprovisiona un rol de login temporal con el token de la API:
+
+```bash
+npx supabase@latest link --project-ref dabvugwhzwkmdmsvrazz
+npx supabase@latest db push
+```
+
+**El orden no es decorativo.** El apéndice B revoca `execute` en bloque y después
+otorga una lista explícita donde `desglose` no aparece, porque nació en el C. En
+orden B → C → D todo queda bien, porque el C y el D otorgan su propio permiso al
+final. Re-aplicar el B **solo**, después del C y el D, deja `desglose` sin permiso
+y la vista de Gráficos del tablero deja de cargar. Si pasa, basta re-aplicar el D:
+es un `create or replace` completo más su grant.
+
+**Lo que no está aquí es el script base.** La base se construyó pegando SQL en el
+SQL Editor y el historial de migraciones remoto está vacío, así que estas tres no
+reconstruyen el proyecto desde cero: dan por hecho que las tablas ya existen.
+Extraer el base con `db pull` o `db dump` exige Docker, que esta máquina no tiene.
+
+`db push` sí funciona sin Docker, porque no necesita base sombra.
+
+---
+
+## 1. El apéndice B
 
 Idempotente, no toca nada de lo existente. Cuatro cosas:
 
@@ -168,7 +196,7 @@ identidad la llevan la leyenda y las etiquetas, donde cada categoría sí conser
 color. El sobrante va tramado en vez de gris, porque un neutro de baja saturación
 siempre queda cerca de algún tono.
 
-Si `quanto_v2.sql` no está aplicado, **no se rompe**: lo detecta, avisa y sigue
+Si el apéndice B no está aplicado, **no se rompe**: lo detecta, avisa y sigue
 sirviendo con lo que expone el script base.
 
 **Verificado en navegador**: registró un gasto de L 175.50 en Comida (notificación
