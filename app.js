@@ -331,7 +331,12 @@ function Dona({ segmentos, etiqueta, pie, vacio = "Sin datos en este rango." }) 
     <div class="dona">
       <svg viewBox="0 0 200 200" role="img"
            aria-label=${`${pie}. Total L ${L(total)}. Mayor: ${mayor.nombre}, ${pct((100 * mayor.monto) / total)}`}>
-        <g transform="rotate(-90 100 100)">${arcos}</g>
+        <g transform="rotate(-90 100 100)">
+          <!-- Pista teñida: los pasos claros de la rampa apenas contrastan
+               contra blanco, y sobre esta pista sí quedan definidos. -->
+          <circle cx="100" cy="100" r=${R} fill="none" stroke="var(--hundido)" stroke-width=${GROSOR}></circle>
+          ${arcos}
+        </g>
         <text x="100" y="94" text-anchor="middle" class="dona-cifra">L ${nf0.format(etiqueta ?? total)}</text>
         <text x="100" y="112" text-anchor="middle" class="dona-pie">${pie}</text>
       </svg>
@@ -716,7 +721,6 @@ function App() {
   const [cargandoDes, setCargandoDes] = useState(false);
   const [vista, setVista] = useState(ls("quanto.vista", "libro"));
   const [animar, setAnimar] = useState(false);
-  const [tema, setTema] = useState(ls("quanto.tema", ""));
   const [enRegistrar, setEnRegistrar] = useState(false);
   const refMonto = useRef(null);
 
@@ -757,12 +761,6 @@ function App() {
       requestAnimationFrame(() => setAnimar(true));
     })();
   }, [listo]);
-
-  useEffect(() => {
-    if (tema) document.documentElement.setAttribute("data-theme", tema);
-    else document.documentElement.removeAttribute("data-theme");
-    lset("quanto.tema", tema);
-  }, [tema]);
 
   useEffect(() => { lset("quanto.vista", vista); }, [vista]);
 
@@ -825,10 +823,6 @@ function App() {
               </p>`
             : html`<p class="folio">Abriendo el libro…</p>`}
         </div>
-        <button class="btn icono" type="button" aria-label="Cambiar tema"
-                onClick=${() => setTema(tema === "dark" ? "light" : tema === "light" ? "" : "dark")}>
-          ${tema === "dark" ? "☾" : tema === "light" ? "☀" : "◐"}
-        </button>
       </header>
 
       <nav class="vistas" role="tablist">

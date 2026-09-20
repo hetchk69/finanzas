@@ -4,51 +4,38 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Libro de Lempiras</title>
-<meta name="theme-color" content="#1B6B4F" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0A120E" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#2E5E9E">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Lempiras">
-<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAABtUlEQVR42u3bsQkAIAwAQfdwKAdxfwUrF7ALgpGDnyC5KmKpvUnHihEIDsEhOASH4BAcgkNwCA7BIcEhOASH4BAcgkNwCA7BITgkOASH4BAcgkNwCA7BITgEhwSH4BAcgkNwCA7BITgEh+AQHEmaawSzcjjggAMOOOCAAw444IADDjjggAMOOOAQHIIDDjjggAMOOOCAAw444IADDjjggAMOwSE44MiKI77yG8EBBxxwwAEHHHDAAQcccMABBxxwwAGHCykccMABh+CwcjjggAMOOOCAAw444IADDjjggMPbChxwwAEHHHDAAQcccMABBxxwwAEHHHC4kMIBBxxwCA7BAQcccMABBxxwwAEHHHDAAQcccMABBxxwCA444IADDjjggAMOOOCAAw444IADDjjg+B/Hy8EBBxxwwAEHHHDAAQcccMABBxxwwAEHHHDAAQcccMABBxxwwAEHHHDAAQcccMABBxxwwAEHHHDAIV8TBIfgEBwSHIJDcAgOwSE4BIfgEByCQ4JDcAgOwSE4BIfgEByCQ3BIcAgOwSE4BIfgEByCQ3AIDsEhwSE4BIfgEByCQ4naDvS+Gq/AjqkAAAAASUVORK5CYII=">
-<link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAABtUlEQVR42u3bsQkAIAwAQfdwKAdxfwUrF7ALgpGDnyC5KmKpvUnHihEIDsEhOASH4BAcgkNwCA7BIcEhOASH4BAcgkNwCA7BITgkOASH4BAcgkNwCA7BITgEhwSH4BAcgkNwCA7BITgEh+AQHEmaawSzcjjggAMOOOCAAw444IADDjjggAMOOOAQHIIDDjjggAMOOOCAAw444IADDjjggAMOwSE44MiKI77yG8EBBxxwwAEHHHDAAQcccMABBxxwwAGHCykccMABh+CwcjjggAMOOOCAAw444IADDjjggMPbChxwwAEHHHDAAQcccMABBxxwwAEHHHC4kMIBBxxwCA7BAQcccMABBxxwwAEHHHDAAQcccMABBxxwCA444IADDjjggAMOOOCAAw444IADDjjg+B/Hy8EBBxxwwAEHHHDAAQcccMABBxxwwAEHHHDAAQcccMABBxxwwAEHHHDAAQcccMABBxxwwAEHHHDAIV8TBIfgEBwSHIJDcAgOwSE4BIfgEByCQ4JDcAgOwSE4BIfgEByCQ3BIcAgOwSE4BIfgEByCQ3AIDsEhwSE4BIfgEByCQ4naDvS+Gq/AjqkAAAAASUVORK5CYII=">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAABtUlEQVR42u3bUQkAIAxAQRMZyWjmFEGwgH9DcHLwEmz3NbHU1qVjxQgEh+AQHIJDcAgOwSE4BIfgkOAQHIJDcAgOwSE4BIfgEBwSHIJDcAgOwSE4BIfgEByCQ4JDcAgOwSE4BIfgEByCQ3AIjiSNuYJZORxwwAEHHHDAAQcccMABBxxwwAEHHHAIDsEBBxxwwAEHHHDAAQcccMABBxxwwAGH4BAccGTFEV/5jeCAAw444IADDjjggAMOOOCAAw444IDDhRQOOOCAQ3BYORxwwAEHHHDAAQcccMABBxxwwOFtBQ444IADDjjggAMOOOCAAw444IADDjhcSOGAAw44BIfggAMOOOCAAw444IADDjjggAMOOOCAAw44BAcccMABBxxwwAEHHHDAAQcccMABBxxw/I/j5eCAAw444IADDjjggAMOOOCAAw444IADDjjggAMOOOCAAw444IADDjjggAMOOOCAAw444IADDjjgkK8JgkNwCA4JDsEhOASH4BAcgkNwCA7BIcEhOASH4BAcgkNwCA7BITgkOASH4BAcgkNwCA7BITgEh+CQ4BAcgkNwCA7BoURtXDRbNM1uQ3EAAAAASUVORK5CYII=">
+<link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAABtUlEQVR42u3bUQkAIAxAQRMZyWjmFEGwgH9DcHLwEmz3NbHU1qVjxQgEh+AQHIJDcAgOwSE4BIfgkOAQHIJDcAgOwSE4BIfgEBwSHIJDcAgOwSE4BIfgEByCQ4JDcAgOwSE4BIfgEByCQ3AIjiSNuYJZORxwwAEHHHDAAQcccMABBxxwwAEHHHAIDsEBBxxwwAEHHHDAAQcccMABBxxwwAGH4BAccGTFEV/5jeCAAw444IADDjjggAMOOOCAAw444IDDhRQOOOCAQ3BYORxwwAEHHHDAAQcccMABBxxwwOFtBQ444IADDjjggAMOOOCAAw444IADDjhcSOGAAw44BIfggAMOOOCAAw444IADDjjggAMOOOCAAw44BAcccMABBxxwwAEHHHDAAQcccMABBxxw/I/j5eCAAw444IADDjjggAMOOOCAAw444IADDjjggAMOOOCAAw444IADDjjggAMOOOCAAw444IADDjjgkK8JgkNwCA4JDsEhOASH4BAcgkNwCA7BIcEhOASH4BAcgkNwCA7BITgkOASH4BAcgkNwCA7BITgEh+CQ4BAcgkNwCA7BoURtXDRbNM1uQ3EAAAAASUVORK5CYII=">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
 <style>
 /* ============================================================
-   Papel contable de columnas: fondo apenas verdoso, renglones
-   reglados en verde-gris, tinta roja para el sobregiro. El
-   artefacto del oficio, no una paleta de fintech.
+   Tinta azul sobre papel. La idea de libro de cuentas la sostienen
+   el papel y los renglones reglados, no el color; el azul es el de
+   la tinta y el rojo queda reservado para el sobregiro.
+   Tema unico y claro, por decision: sin variantes oscuras.
    ============================================================ */
 :root{
-  --paper:#F7FAF6; --card:#FFFFFF; --banda:#F1F6F0; --hundido:#EDF2EC;
-  --rule:#D7E3D8;  --ink:#0F1C16;  --ink2:#546158; --ink3:#87958B;
-  --accent:#1B6B4F; --over:#A8392A; --warn:#8A6412;
+  /* Tinta azul, un solo tema claro. color-scheme:light es obligatorio:
+     sin el, un telefono en modo oscuro pinta los controles nativos
+     (date, select) en oscuro sobre este papel. */
+  --paper:#F8FAFD; --card:#FFFFFF; --banda:#F3F7FC; --hundido:#EDF2F8;
+  --rule:#DCE5F0;  --ink:#141C28;  --ink2:#54627A; --ink3:#64748B;
+  --accent:#2E5E9E; --over:#B33A2B; --warn:#8A6412;
   --on-accent:#FFFFFF;
-  --d1:#0C4733; --d2:#14634A; --d3:#1C8060; --d4:#2E9E78; --d5:#5FBC99; --d6:#9BD7BE;
-  --sombra:0 1px 0 var(--rule), 0 10px 30px -22px rgba(15,28,22,.5);
+  /* Rampa secuencial de la dona: un solo tono, luminosidad creciente
+     (verificada monotona). El rango va recortado a proposito: estirarla
+     hasta el azul palido deja el paso mas claro en 1.35 de contraste
+     sobre tarjeta blanca, practicamente invisible. */
+  --d1:#1F4C89; --d2:#2F6299; --d3:#4177AC; --d4:#548CBE; --d5:#69A1CF; --d6:#83B7DF;
+  --sombra:0 1px 0 var(--rule), 0 10px 30px -22px rgba(20,28,40,.45);
   color-scheme:light;
-}
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --paper:#0A120E; --card:#101A15; --banda:#0D1712; --hundido:#16231C;
-    --rule:#1F2E26;  --ink:#E4EDE6;  --ink2:#93A399; --ink3:#64756B;
-    --accent:#56C596; --over:#E58370; --warn:#D0A24A;
-    --on-accent:#07120C;
-    --d1:#A8E6CB; --d2:#7FD6B2; --d3:#57C39A; --d4:#37A87F; --d5:#248A66; --d6:#186B4F;
-    --sombra:0 1px 0 var(--rule), 0 10px 30px -22px #000;
-    color-scheme:dark;
-  }
-}
-:root[data-theme="dark"]{
-  --paper:#0A120E; --card:#101A15; --banda:#0D1712; --hundido:#16231C;
-  --rule:#1F2E26;  --ink:#E4EDE6;  --ink2:#93A399; --ink3:#64756B;
-  --accent:#56C596; --over:#E58370; --warn:#D0A24A;
-  --on-accent:#07120C;
-  --d1:#A8E6CB; --d2:#7FD6B2; --d3:#57C39A; --d4:#37A87F; --d5:#248A66; --d6:#186B4F;
-  --sombra:0 1px 0 var(--rule), 0 10px 30px -22px #000;
-  color-scheme:dark;
 }
 
 *{box-sizing:border-box}

@@ -121,10 +121,11 @@ al SQL Editor por un presupuesto o el día de pago.
 paso de compilación y sin CDN en tiempo de ejecución). Componentes, hooks y listas
 con key; la única dependencia externa son las tipografías.
 
-**El diseño se ancla en el papel contable de columnas**: fondo apenas verdoso,
-renglones reglados en verde-gris y tinta roja para el sobregiro. Es el artefacto
-del oficio, coherente con la tesis del documento original — «no es una app de
-finanzas, es un libro contable manual».
+**Tinta azul sobre papel, tema único y claro.** La idea de libro de cuentas la
+sostienen el papel y los renglones reglados, no el color; el azul es el de la
+tinta y el rojo queda reservado para el sobregiro. No hay variante oscura por
+decisión: `color-scheme:light` en `:root` es obligatorio para que un teléfono en
+modo oscuro no pinte los controles nativos en oscuro sobre este papel.
 
 **El elemento firma es el medidor de ritmo.** Pone dos marcas en una misma escala:
 dónde va el ciclo y dónde va el gasto. Si el gasto adelanta al calendario, pasa a
