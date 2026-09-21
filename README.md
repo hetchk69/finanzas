@@ -50,7 +50,7 @@ movimientos:
 
 | RPC | Resultado |
 |---|---|
-| `get_lists` | 10 categorías de gasto, 2 de ingreso, 4 cuentas |
+| `get_lists` | 10 categorías de gasto, 2 de ingreso, 4 cuentas (5 de ingreso con el apéndice E) |
 | `cycle_summary` | ciclo, 5 presupuestos, 4 saldos |
 | `log_expense` | insertó y devolvió `disponible` |
 | `log_income` | insertó y devolvió `saldo` |
@@ -65,7 +65,9 @@ El apéndice B está aplicado: la base tiene la tabla `goals` y el índice
 
 ### Falta hacer
 
-1. **Armar los atajos** siguiendo `ATAJOS.md`
+1. **Aplicar el apéndice E** — las tres categorías de entrada nuevas, con
+   `db push` (ver sección 0)
+2. **Armar los atajos** siguiendo `ATAJOS.md`
 
 Publicar el tablero ya está hecho: vive en
 <https://hetchk69.github.io/finanzas/> y se verificó contra el proyecto real
