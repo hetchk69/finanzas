@@ -67,6 +67,14 @@ function Regla({ etiqueta, children }) {
     </div>`;
 }
 
+/* El emoji reemplaza al punto de color cuando existe: identifica igual de
+   rápido y evita que diez tonos saturados peleen con el azul del cromo. */
+function Marca({ icono, color }) {
+  return icono
+    ? html`<i class="marca" aria-hidden="true">${icono}</i>`
+    : html`<i class="punto" style=${`--c:${color || "var(--ink3)"}`}></i>`;
+}
+
 function Cifra({ valor, signo = false, tono = "", tam = "" }) {
   const n = Number(valor || 0);
   const t = tono || (n < 0 ? "rojo" : "");
@@ -192,7 +200,7 @@ function Sobre({ b, ciclo, animar, onAjustar }) {
               onClick=${() => onAjustar({ categoria: b.categoria, limite: b.limite, gastado: b.gastado })}>
       <div class="sobre-cab">
         <span class="sobre-nombre">
-          <i class="punto" style=${`--c:${b.color || "var(--accent)"}`}></i>${b.categoria}
+          <${Marca} icono=${b.icono} color=${b.color} />${b.categoria}
         </span>
         <span class="sobre-restante">
           ${p > 100 ? "excedido " : "quedan "}
@@ -243,7 +251,9 @@ function Cinta({ serie, ciclo }) {
 
 function Asiento({ m, onAbrir }) {
   const [, mm, dd] = String(m.fecha).split("-");
-  const titulo = m.tipo === "transferencia" ? "Transferencia" : m.categoria || "—";
+  const titulo = m.tipo === "transferencia"
+    ? "Transferencia"
+    : `${m.icono ? m.icono + " " : ""}${m.categoria || "—"}`;
   const det = m.tipo === "transferencia"
     ? `${m.cuenta} › ${m.cuenta_destino}`
     : m.cuenta;
@@ -470,7 +480,7 @@ function Graficos({ des, presupuestos, cargando, onRango, onAjustar }) {
               <button type="button"
                       aria-label=${`Ajustar el límite de ${c.categoria}`}
                       onClick=${() => onAjustar({ categoria: c.categoria, limite: c.limite, gastado: c.total })}>
-                <i class="punto" style=${`--c:${c.color || "var(--ink3)"}`}></i>
+                <${Marca} icono=${c.icono} color=${c.color} />
                 <span class="leyenda-nombre">${c.categoria}</span>
                 <span class="leyenda-lim">
                   ${lim == null ? "sin límite" : `de ${L(lim)}`}

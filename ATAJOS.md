@@ -1,183 +1,235 @@
-# Atajos de iPhone — hoja de armado
+# Atajo de iPhone — entradas y salidas
 
-## Por qué hay que armarlos a mano
+> **Requiere `quanto_v5.sql` aplicado.** Antes de eso las cuentas nuevas no
+> existen y las categorías no tienen emoji.
 
-Desde **iOS 15 los archivos `.shortcut` van firmados**, y la firma solo se puede
-hacer desde un Mac (`shortcuts sign`). Un archivo sin firmar no entra al teléfono:
-«Allow Untrusted Shortcuts» sirve para atajos compartidos entre personas, no para
-un plist generado en una PC. Así que no tiene sentido que te entregue archivos —
-no se importarían. Esto es lo que sí sirve: los valores exactos, sin ambigüedad.
+## Por qué va a mano
 
-Son unos diez minutos para los cuatro atajos. Solo el primero tiene trabajo real;
-los otros tres son variaciones de dos o tres campos.
+Desde iOS 15 los archivos `.shortcut` van firmados, y la firma solo se hace desde
+un Mac. Un archivo generado en Windows no se importaría. Esto es lo que sí sirve:
+los valores exactos.
 
----
+## Antes de empezar
 
-## Datos que vas a pegar
+Mándese al teléfono la anon key (Supabase → Settings → API → **anon public**) y
+esta URL base, que son lo único largo de teclear:
 
 ```
-URL base    https://dabvugwhzwkmdmsvrazz.supabase.co/rest/v1/rpc/
-ANON KEY    Supabase → Settings → API → Project API keys → anon public
+https://dabvugwhzwkmdmsvrazz.supabase.co/rest/v1/rpc/
 ```
 
-La anon key no está escrita en ningún archivo de esta carpeta, a propósito: así la
-carpeta entera se puede publicar sin filtrarla. Cópiala del panel de Supabase.
-
-**Los tres encabezados** van en *toda* llamada. En la acción **Obtener contenido de
-la URL**, método `POST`, sección *Headers*:
+**Los tres encabezados** van en toda llamada. En *Obtener contenido de la URL*,
+método `POST`, sección *Encabezados*:
 
 | Clave | Valor |
 |---|---|
 | `apikey` | *(la anon key)* |
-| `Authorization` | `Bearer ` + *(la anon key)* — con el espacio |
+| `Authorization` | la palabra `Bearer`, **un espacio**, y la llave |
 | `Content-Type` | `application/json` |
 
-En *Request Body* elige **JSON** (no «Form»). Y ojo con la barra final: es
-`/rest/v1/rpc/log_expense`, no `/rest/v1/rpclog_expense`.
+En `Authorization` no va ningún `+`: es `Bearer eyJhbGci…`, pegado con un espacio.
+
+Y en *Cuerpo de la solicitud* elija **JSON**, nunca «Formulario» — si queda en
+formulario, Supabase responde `Empty or invalid json`.
 
 ---
 
-## 1. Atajo «Gasto» — el que vas a usar todos los días
+## Un solo atajo con bifurcación
 
-Nómbralo exactamente `Gasto`, en una palabra, para que Siri lo entienda.
+Nómbrelo `Registrar`.
 
-**Acción 1 — Texto.** Pega esto, una categoría por línea:
+### Acciones 1–3 — la pregunta que parte todo
 
+**1. Texto**
 ```
-Comida
-Supermercado
-Transporte
-Combustible
-Servicios
-Salud
-Suscripciones
-Ocio
-Hogar
-Otros
+Entrada
+Salida
 ```
 
-**Acción 2 — Dividir texto.** Separador: **Líneas nuevas**.
+**2. Dividir texto** → separador **Líneas nuevas**
 
-**Acción 3 — Elegir de la lista.** Entrada: el resultado anterior. Pregunta:
-`¿Categoría?`
+**3. Elegir de la lista** → entrada: el resultado anterior · Preguntar: `¿Entrada o salida?`
 
-**Acción 4 — Pedir entrada.** Tipo **Número**. Pregunta: `¿Cuánto? L`
+### Acción 4 — Si
 
-> El orden importa: la categoría es lo que más tarda en decidirse, y dejar el
-> monto de último hace que el teclado numérico aparezca al final. Se confirma con
-> una sola mano.
+Agregue la acción **Si**. Configúrela:
 
-**Acción 5 — Obtener contenido de la URL.**
+> **Si** `Elemento elegido` **es** `Entrada`
 
-- URL: `https://dabvugwhzwkmdmsvrazz.supabase.co/rest/v1/rpc/log_expense`
-- Método: `POST`
-- Headers: los tres de arriba
-- Request Body → **JSON**:
+Shortcuts agrega sola las secciones **Si no** y **Finalizar si**. Todo lo de la
+rama de entrada va *entre* «Si» y «Si no»; lo de salida, entre «Si no» y
+«Finalizar si».
+
+---
+
+## Rama ENTRADA (entre «Si» y «Si no»)
+
+**5. Texto** — a qué cuenta entra el dinero:
+```
+Banco Atlántida
+BAC Débito
+Efectivo
+```
+
+> BAC Crédito no aparece aquí a propósito: meter dinero a una tarjeta de crédito
+> no es un ingreso, es pagar la tarjeta. Eso es una transferencia.
+
+**6. Dividir texto** → **Líneas nuevas**
+
+**7. Elegir de la lista** → Preguntar: `¿A qué cuenta?`
+
+**8. Texto** — categorías de ingreso:
+```
+💼 Salario
+🔧 Instalación
+💻 Desarrollo
+✨ Otros
+```
+
+**9. Dividir texto** → **Líneas nuevas**
+
+**10. Elegir de la lista** → Preguntar: `¿De qué?`
+
+**11. Pedir entrada** → tipo **Número** · Preguntar: `¿Cuánto? L`
+
+**12. Pedir entrada** → tipo **Texto** · Preguntar: `Descripción (opcional)`
+
+**13. Obtener contenido de la URL**
+
+- URL: `https://dabvugwhzwkmdmsvrazz.supabase.co/rest/v1/rpc/log_income`
+- Método `POST`, los tres encabezados, cuerpo **JSON**:
 
 | Clave | Tipo | Valor |
 |---|---|---|
-| `p_amount` | Número | *variable de la acción 4* |
-| `p_category` | Texto | *variable de la acción 3* |
-| `p_account` | Texto | `Efectivo` |
+| `p_amount` | Número | *variable de la acción 11* |
+| `p_category` | Texto | *variable de la acción 10* |
+| `p_account` | Texto | *variable de la acción 7* |
+| `p_note` | Texto | *variable de la acción 12* |
 
-**Acción 6 — Obtener valor del diccionario.** Clave: `disponible`
+**14. Obtener valor del diccionario** → clave `saldo`
 
-**Acción 7 — Mostrar notificación:**
-
+**15. Mostrar notificación**
 ```
-L [Monto] en [Categoría] · Quedan L [Disponible]
++L [Monto] · [Categoría] · Saldo L [Valor del diccionario]
 ```
 
-Ese aviso es el producto. Sin él estás escribiendo en un agujero negro.
+---
 
-### Sobre la lista fija de categorías
+## Rama SALIDA (entre «Si no» y «Finalizar si»)
 
-Existe `get_lists` para no mantenerla a mano: se pondría una llamada a
-`.../rpc/get_lists` + **Obtener valor del diccionario** con clave `gastos` antes
-del selector, y se borran las acciones 1 y 2.
+**16. Texto** — con qué se pagó:
+```
+Efectivo
+BAC Crédito
+BAC Débito
+Banco Atlántida
+```
 
-**No lo recomiendo para este atajo.** Agrega un viaje de red antes de que aparezca
-el selector — medio segundo de rueda girando justo en el momento que tiene que ser
-instantáneo, y la captura lenta es exactamente lo que mata estos sistemas. La lista
-fija se desincroniza solo cuando agregues una categoría, y ese día editas una
-acción de texto. Usa `get_lists` en «Resumen», donde medio segundo no importa.
+> Efectivo va primero porque es lo más frecuente y queda bajo el pulgar.
+
+**17. Dividir texto** → **Líneas nuevas**
+
+**18. Elegir de la lista** → Preguntar: `¿Con qué pagó?`
+
+**19. Texto** — categorías de gasto:
+```
+🍽️ Comida
+🛒 Supermercado
+🚌 Transporte
+⛽ Combustible
+💡 Servicios
+🏥 Salud
+🔁 Suscripciones
+🎬 Ocio
+🏠 Hogar
+📦 Otros
+```
+
+**20. Dividir texto** → **Líneas nuevas**
+
+**21. Elegir de la lista** → Preguntar: `¿Categoría?`
+
+**22. Pedir entrada** → tipo **Número** · Preguntar: `¿Cuánto? L`
+
+**23. Pedir entrada** → tipo **Texto** · Preguntar: `¿En qué?`
+
+**24. Obtener contenido de la URL**
+
+- URL: `https://dabvugwhzwkmdmsvrazz.supabase.co/rest/v1/rpc/log_expense`
+- Método `POST`, los tres encabezados, cuerpo **JSON**:
+
+| Clave | Tipo | Valor |
+|---|---|---|
+| `p_amount` | Número | *variable de la acción 22* |
+| `p_category` | Texto | *variable de la acción 21* |
+| `p_account` | Texto | *variable de la acción 18* |
+| `p_note` | Texto | *variable de la acción 23* |
+
+**25. Obtener valor del diccionario** → clave `disponible`
+
+**26. Mostrar notificación**
+```
+−L [Monto] en [Categoría] · Quedan L [Valor del diccionario]
+```
 
 ---
 
-## 2. Atajo «Gasto tarjeta»
+## Sobre los emojis
 
-Duplica `Gasto` y cambia **una sola cosa**: en la acción 5, `p_account` = `Crédito`.
+La base guarda `Comida` y el emoji va aparte, en la columna `icon`. Las funciones
+**normalizan** antes de comparar: quitan el emoji inicial, las tildes y las
+mayúsculas. Por eso el atajo puede mandar `🍽️ Comida`, `Comida` o `comida` y las
+tres encuentran lo mismo.
 
-Dos atajos rápidos le ganan a uno lento que pregunta la cuenta cada vez. Si de
-verdad usas tres o cuatro cuentas a diario, entonces sí mete un segundo
-**Texto → Dividir → Elegir de la lista** con `Efectivo`, `Débito`, `Crédito`,
-`Ahorros` y usa esa variable en `p_account`.
+Eso es lo que arregla el error que salió la primera vez, cuando la lista tenía
+emoji y la base no.
 
----
-
-## 3. Atajo «Ingreso»
-
-Igual que `Gasto`, con tres cambios:
-
-- Acción 1, la lista: solo `Salario` y `Extras`
-- Acción 5, la URL: `.../rpc/log_income`
-- Acción 6, la clave: `saldo` en vez de `disponible`
-- Notificación: `L [Monto] · Saldo L [Saldo]`
+Si algún día quiere que la lista se mantenga sola, cambie las acciones de **Texto
++ Dividir** por una llamada a `.../rpc/get_lists` y un **Obtener valor del
+diccionario** con clave `gastos` o `ingresos` — ya vienen con el emoji puesto.
+Cuesta medio segundo de red antes de que aparezca el selector, que es justo el
+momento en que no conviene esperar; por eso no viene así por defecto.
 
 ---
 
-## 4. Atajo «Transferencia»
+## Sobre la velocidad
 
-- **Elegir de la lista** (cuentas) → `p_from`
-- **Elegir de la lista** (cuentas) → `p_to`
-- **Pedir entrada**, Número → `p_amount`
-- URL: `.../rpc/transfer`
-- Claves de salida: `saldo_origen` y `saldo_destino`
+Preguntar «¿entrada o salida?» agrega **un toque a cada captura**, y las salidas
+son la enorme mayoría. Si en dos semanas le empieza a estorbar, la alternativa es
+partirlo en dos atajos — `Gasto` e `Ingreso` — cada uno sin esa primera pregunta.
+Se duplica este y se borra la rama que sobra en cada copia; los encabezados con la
+llave se conservan y no hay que volver a pegarlos.
 
-Origen y destino no pueden ser la misma cuenta: la base lo rechaza con un error
-claro, no con un movimiento raro.
-
----
-
-## 5. Atajo «Deshacer»
-
-Dos acciones. Este es el que más vas a agradecer.
-
-1. **Obtener contenido de la URL** → `POST .../rpc/undo_last`, los tres headers,
-   **sin cuerpo**
-2. **Mostrar notificación** → `Borrado: L [monto]`
-
-Ponlo en el Centro de Control junto al de gasto. Vas a teclear mal un monto en la
-primera semana, y sin deshacer se abandona el sistema.
+Dos atajos rápidos le ganan a uno lento. Pero empiece por el que pidió y decida
+con el uso, no de antemano.
 
 ---
 
-## 6. Atajo «Resumen»
-
-1. **Obtener contenido de la URL** → `POST .../rpc/cycle_summary`
-2. **Obtener valor del diccionario** → clave `presupuestos`
-3. **Repetir con cada elemento** → dentro, extraer `categoria`, `gastado`, `limite`
-4. **Mostrar resultado**
-
-Aquí el bucle sí es aceptable: son cinco presupuestos, no cientos de movimientos.
-
-Con `quanto_v2.sql` aplicado puedes apuntar a `.../rpc/dashboard`, que además trae
-saldos, metas, serie diaria y los últimos movimientos en la misma llamada.
-
----
-
-## 7. Disparadores
+## Disparadores
 
 | Método | Dónde | Velocidad |
 |---|---|---|
-| **Botón de Acción** | Ajustes → Botón de Acción → Atajo → `Gasto` | La más rápida |
+| **Botón de Acción** | Ajustes → Botón de Acción → Atajo → `Registrar` | La más rápida |
 | **Centro de Control** | Añadir control → Atajo | Muy rápida |
 | **Widget** | Widget de Atajos en la pantalla de inicio | Rápida |
-| **Siri** | «Oye Siri, Gasto» | Manos libres |
-| **Tocar atrás** | Accesibilidad → Tocar → Tocar atrás → Doble toque | Discreta |
+| **Siri** | «Oye Siri, Registrar» | Manos libres |
 
-Una automatización que vale la pena: **al salir del supermercado o la gasolinera**
-→ ejecutar `Gasto` con la categoría precargada.
+---
+
+## Los otros dos atajos
+
+**Deshacer** — dos acciones, y el que más va a agradecer:
+
+1. *Obtener contenido de la URL* → `POST .../rpc/undo_last`, los tres encabezados,
+   **sin cuerpo**
+2. *Mostrar notificación* → `Borrado: L [monto]`
+
+**Transferencia** — para pagar la tarjeta de crédito, que no es un gasto:
+
+- *Elegir de la lista* (cuentas) → `p_from`
+- *Elegir de la lista* (cuentas) → `p_to`
+- *Pedir entrada*, Número → `p_amount`
+- URL: `.../rpc/transfer` · claves de salida `saldo_origen` y `saldo_destino`
 
 ---
 
@@ -185,9 +237,10 @@ Una automatización que vale la pena: **al salir del supermercado o la gasoliner
 
 | Síntoma | Causa |
 |---|---|
-| `Categoría no encontrada` | El texto del atajo no coincide con la tabla. La comparación ignora mayúsculas, **pero no tildes ni espacios**: `Debito` no encuentra `Débito`. |
-| `401` / `JWT expired` | Rotaste las llaves y no actualizaste los atajos. |
+| `Categoría de gasto no encontrada` | El nombre no existe en la base. Con `v5` el emoji y las tildes ya no son el problema; revise que la categoría exista. |
+| `Cuenta no encontrada` | El texto no coincide con ninguna cuenta. Las cuentas son `Banco Atlántida`, `BAC Débito`, `BAC Crédito`, `Efectivo`. |
+| `401` / `JWT cryptographic operation failed` | El encabezado `Authorization` está mal armado. Es `Bearer`, un espacio, la llave. Sin `+`. |
+| `Empty or invalid json` | El cuerpo quedó en «Formulario» en vez de JSON. |
 | Todo devuelve `404` | Falta la barra: es `/rest/v1/rpc/`, no `/rest/v1/rpc`. |
-| `Empty or invalid json` | El *Request Body* quedó en «Form» en vez de «JSON». |
-| `disponible` sale vacío | Esa categoría no tiene presupuesto. Es correcto, no un error. |
+| `disponible` sale vacío | Esa categoría no tiene presupuesto. Es correcto. |
 | Nada responde tras días sin usarlo | El proyecto se pausó por inactividad. Se reactiva desde el panel de Supabase. |
