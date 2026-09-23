@@ -1,7 +1,7 @@
 # Atajo de iPhone — entradas y salidas
 
-> **Requiere `quanto_v5.sql` aplicado.** Antes de eso las cuentas nuevas no
-> existen y las categorías no tienen emoji.
+> **Requiere el apéndice F aplicado** (`supabase/migrations/…apendice_f…`).
+> Antes de eso las cuentas nuevas no existen y las categorías no tienen emoji.
 
 ## Por qué va a mano
 

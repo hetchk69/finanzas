@@ -1,0 +1,27 @@
+-- ============================================================
+-- Quanto DIY — Apéndice E: categorías de entrada (SUPERADO)
+--
+-- Este archivo nunca llegó a correr contra la base real. Antes de
+-- aplicarlo se decidió un diseño distinto para las cuentas y las
+-- categorías de entrada — ver el apéndice F, que es el que sí está
+-- aplicado en producción.
+--
+-- Se deja el archivo vacío en vez de borrarlo para no perder el
+-- rastro: documenta una dirección que se consideró y se descartó.
+-- Diferencias con lo que sí quedó (apéndice F):
+--
+--   Este E (nunca aplicado)         F (aplicado, es la realidad)
+--   -------------------------------  -----------------------------
+--   Pago de trabajo                  Salario
+--   Cobro de servicios               Otros (ingreso)
+--   Instalaciones                    Instalación, Desarrollo
+--   (sin cuentas nuevas)             Banco Atlántida, BAC Débito,
+--                                    BAC Crédito
+--   (sin emoji)                      icon + norm() para tolerar
+--                                    emoji/tildes/mayúsculas
+--
+-- No hay nada que ejecutar aquí. Si `db push` corre este archivo,
+-- debe ser un no-op.
+-- ============================================================
+
+select 1; -- no-op a propósito

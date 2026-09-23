@@ -20,7 +20,7 @@ Porque en GitHub «privado» no compra privacidad aquí:
 
 Como el código no lleva ninguna anon key, esconderlo no protege nada. Lo que
 protege de verdad son los permisos de las funciones RPC — por eso importa aplicar
-`quanto_v2.sql`.
+el apéndice B.
 
 Si algún día quieres el sitio de verdad tras una puerta: **Cloudflare Pages +
 Cloudflare Access** da login por correo gratis hasta 50 usuarios. Es la única vía
@@ -28,8 +28,10 @@ gratuita a un sitio realmente privado.
 
 | Archivo | Qué es |
 |---|---|
-| `index.html` | El tablero. Un solo archivo, instalable en la pantalla de inicio |
-| `quanto_v2.sql` | Complemento a pegar en el SQL Editor de Supabase |
+| `index.html` | El tablero: estilos, Preact+htm incrustados y el punto de montaje |
+| `app.js` | La aplicación: componentes, hooks y las llamadas RPC |
+| `supabase/migrations/` | Los apéndices, versionados y en orden de aplicación |
+| `supabase/config.toml` | Apunta el CLI al proyecto de la nube |
 | `ATAJOS.md` | Hoja de armado de los atajos de iPhone |
 | `.nojekyll` | Que GitHub Pages sirva los archivos tal cual |
 
@@ -42,35 +44,72 @@ publicar entera sin filtrar nada. La llave se pega una vez en cada dispositivo.
 
 ### Funcionando y verificado
 
-El script base está aplicado en el proyecto `dabvugwhzwkmdmsvrazz`. Probé las seis
-RPC una por una con la anon key y deshice cada prueba — la base quedó en cero
-movimientos:
+**Los apéndices B, C, D y F están aplicados en `dabvugwhzwkmdmsvrazz`.** El E
+no — quedó superado antes de correrlo (ver su archivo y la sección 4).
 
 | RPC | Resultado |
 |---|---|
-| `get_lists` | 10 categorías de gasto, 2 de ingreso, 4 cuentas |
-| `cycle_summary` | ciclo, 5 presupuestos, 4 saldos |
-| `log_expense` | insertó y devolvió `disponible` |
-| `log_income` | insertó y devolvió `saldo` |
+| `get_lists` | 10 categorías de gasto (con emoji), 4 de ingreso (con emoji), 5 cuentas |
+| `cycle_summary` | ciclo, presupuestos, saldos |
+| `dashboard` | ciclo, ritmo, presupuestos, saldos, metas, serie diaria, asientos — todo con icono |
+| `desglose` | total y desglose por categoría y cuenta en cualquier rango |
+| `log_expense` / `log_income` | aceptan `"🍽️ Comida"`, `"comida"` o `"Comida"` por igual (`norm()`) |
 | `transfer` | movió saldo entre cuentas |
-| `undo_last` | borró el último; con tabla vacía, `Sin movimientos` |
+| `undo_last` | borra el último; con tabla vacía, `Sin movimientos` |
 
-El blindaje de tablas y vistas es correcto: `anon` recibe `42501 permission denied`
-en `transactions`, `accounts`, `settings` y todas las vistas.
+Probadas una por una con la anon key, deshechas después. El blindaje de tablas y
+vistas es correcto: `anon` recibe `42501 permission denied` en `transactions`,
+`accounts`, `settings`, `goals` y todas las vistas; `run_recurring()` sigue
+rechazando con 401.
+
+**Cuentas reales**: Banco Atlántida (solo débito), BAC Débito, BAC Crédito,
+Efectivo, Ahorros. **Categorías de ingreso**: Salario, Instalación, Desarrollo,
+Otros.
 
 ### Falta hacer
 
-1. **Aplicar `quanto_v2.sql`** (SQL Editor → pegar → Run)
-2. **Armar los atajos** siguiendo `ATAJOS.md`
+1. **Armar los atajos** siguiendo `ATAJOS.md` — es lo único pendiente
 
-Publicar el tablero ya está hecho: vive en
-<https://hetchk69.github.io/finanzas/> y se verificó contra el proyecto real
-(cargó ciclo, presupuestos y saldos). Falta añadirlo a la pantalla de inicio del
-teléfono — Safari → Compartir → Añadir a pantalla de inicio.
+El tablero ya está publicado en <https://hetchk69.github.io/finanzas/> y
+verificado contra el proyecto real, con los emojis puestos. Falta añadirlo a la
+pantalla de inicio del teléfono — Safari → Compartir → Añadir a pantalla de
+inicio.
 
 ---
 
-## 1. `quanto_v2.sql`
+## 0. El esquema y las migraciones
+
+Los apéndices viven en `supabase/migrations/`, con el nombre en orden de
+aplicación. Se aplican con el CLI, sin Docker y sin la contraseña de Postgres —
+el CLI se aprovisiona un rol de login temporal con el token de la API:
+
+```bash
+npx supabase@latest link --project-ref dabvugwhzwkmdmsvrazz
+npx supabase@latest db push
+```
+
+**El orden no es decorativo.** El apéndice B revoca `execute` en bloque y después
+otorga una lista explícita donde `desglose` no aparece, porque nació en el C. En
+orden B → C → D → F todo queda bien, porque C, D y F otorgan su propio permiso al
+final — F además vuelve a revocar y otorgar todo, así que re-aplicarlo solo ya
+deja los permisos completos. Re-aplicar el B **solo**, después de los demás, deja
+`desglose` (y las funciones del F) sin permiso y el tablero deja de cargar. Si
+pasa, basta re-aplicar el F: revoca y otorga la lista completa.
+
+**El E es un no-op.** Se escribió, se decidió un diseño distinto antes de
+correrlo, y el archivo quedó como constancia — `select 1;` y nada más. `db push`
+lo ejecuta sin efecto. El apéndice F es el que reemplaza su función.
+
+**Lo que no está aquí es el script base.** La base se construyó pegando SQL en el
+SQL Editor y el historial de migraciones remoto está vacío, así que estas tres no
+reconstruyen el proyecto desde cero: dan por hecho que las tablas ya existen.
+Extraer el base con `db pull` o `db dump` exige Docker, que esta máquina no tiene.
+
+`db push` sí funciona sin Docker, porque no necesita base sombra.
+
+---
+
+## 1. El apéndice B
 
 Idempotente, no toca nada de lo existente. Cuatro cosas:
 
@@ -165,7 +204,7 @@ identidad la llevan la leyenda y las etiquetas, donde cada categoría sí conser
 color. El sobrante va tramado en vez de gris, porque un neutro de baja saturación
 siempre queda cerca de algún tono.
 
-Si `quanto_v2.sql` no está aplicado, **no se rompe**: lo detecta, avisa y sigue
+Si el apéndice B no está aplicado, **no se rompe**: lo detecta, avisa y sigue
 sirviendo con lo que expone el script base.
 
 **Verificado en navegador**: registró un gasto de L 175.50 en Comida (notificación
@@ -189,7 +228,50 @@ con su icono, a pantalla completa y sin barra de Safari.
 
 ---
 
-## 3. Los atajos
+## 3. El apéndice F
+
+Reemplaza al E antes de que este llegara a correr. Cuatro cosas:
+
+### a. Cuentas que existen de verdad
+
+Banco Atlántida solo tiene débito; BAC tiene débito y crédito. Por eso «débito»
+a secas es ambiguo, y las cuentas se nombran por banco e instrumento juntos:
+`Banco Atlántida`, `BAC Débito`, `BAC Crédito`, `Efectivo`. Una sola lista sirve
+a entradas y salidas — si fueran dos listas distintas, el dinero entraría a un
+banco y saldría de otro lado, y los saldos no significarían nada. `BAC Crédito`
+no aparece como destino de un ingreso a propósito: meter dinero a una tarjeta de
+crédito no es un ingreso, es pagarla, y eso es una transferencia.
+
+Las cuentas viejas (`Débito`, `Crédito`) se renombraron a `BAC Débito` / `BAC
+Crédito` en vez de borrarse, para no soltar los movimientos que ya tenían
+colgando.
+
+### b. Categorías de ingreso y el choque de «Otros»
+
+Salario, Instalación, Desarrollo, Otros. Como «Otros» necesita existir en gasto
+*y* en ingreso, el `UNIQUE` de `categories` pasó de ser sobre `name` a ser sobre
+`(name, kind)`. Eso destapó un bug latente: `log_expense` buscaba la categoría
+solo por nombre, sin filtrar por tipo, así que con «Otros» en ambos lados podía
+agarrar la equivocada. Ya filtra por `kind`.
+
+### c. Emojis con `norm()`
+
+Los emojis van en la columna `icon`, que estaba sin usar — el nombre sigue
+siendo el dato, el emoji la presentación. `norm()` quita el emoji inicial, las
+tildes y las mayúsculas antes de comparar, así que el atajo puede mandar
+`"🍽️ Comida"`, `"Comida"` o `"comida"` y las tres encuentran lo mismo. Sin esto,
+la captura fallaba con «Categoría no encontrada» sin decir por qué — es lo que
+pasó la primera vez que el atajo mandó el emoji y la base no lo esperaba.
+
+### d. El tablero pinta el emoji en vez del punto de color
+
+`dashboard()` y `desglose()` devuelven `icono` junto a cada categoría. En la
+interfaz, el emoji reemplaza al punto de color cuando existe: identifica igual
+de rápido y evita que diez tonos saturados peleen con el azul del cromo.
+
+---
+
+## 4. Los atajos
 
 Ver `ATAJOS.md`. Resumen de por qué van a mano: desde iOS 15 los archivos
 `.shortcut` van firmados y la firma solo se hace desde un Mac, así que un archivo
@@ -199,13 +281,15 @@ generado en Windows no se puede importar.
 
 ## Pendiente de decidir
 
-- **Los saldos iniciales están todos en 0**, así que las cuentas se van a negativo
-  con el primer gasto — se vio en la prueba (Efectivo quedó en −175.50).
-  `update accounts set initial_balance = 4500 where name = 'Efectivo';`
-- **El día de pago sigue en 1.** Con el v2 aplicado: `select set_cycle_day(25);`
-- **Presupuestos**: solo cinco categorías tienen límite (Comida 4000, Supermercado
-  6000, Transporte 2000, Combustible 3000, Ocio 2500). Las demás devuelven
-  `disponible` vacío, que es correcto pero conviene saberlo.
+- **Los saldos iniciales de las cuentas nuevas están en 0.** `Banco Atlántida`
+  se creó así; las viejas `BAC Débito`/`BAC Crédito` heredaron el saldo que ya
+  tenían. Se corrige con
+  `update accounts set initial_balance = <monto real> where name = '<cuenta>';`
+- **El día de pago sigue en 1.** `select set_cycle_day(<día>);`
+- **Presupuestos**: solo las categorías de gasto originales tienen límite; ni
+  Salario ni las demás categorías de ingreso lo necesitan (los ingresos no se
+  presupuestan en este diseño). Ver «Ajustar Sobre» en el tablero, o
+  `select set_budget('<categoría>', <monto>);`
 - **El proyecto se pausa a los ~7 días sin actividad** en el tier gratis. Si se
   registra a diario, nunca pasa.
 
