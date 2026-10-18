@@ -83,6 +83,41 @@ function Cifra({ valor, signo = false, tono = "", tam = "" }) {
   </span>`;
 }
 
+/* Las dos caras del libro: lo que entró y lo que salió en el ciclo, con el
+   neto debajo. `dashboard()` ya mandaba los dos totales desde el apéndice B
+   y la página solo pintaba el gasto. Las transferencias no cuentan en
+   ninguna de las dos: mueven saldo entre cuentas propias, no entra ni sale
+   un lempira. */
+function Balance({ resumen }) {
+  const entro = Number(resumen.ingresos) || 0;
+  const salio = Number(resumen.gastos) || 0;
+  if (!entro && !salio) return null;
+  const n = Number(resumen.movimientos) || 0;
+
+  return html`
+    <section>
+      <${Regla} etiqueta="Balance del ciclo">
+        ${n === 1 ? "1 movimiento" : `${n} movimientos`}
+      <//>
+      <div class="balance">
+        <div class="caras">
+          <div class="cara">
+            <span class="cara-rotulo">Entró</span>
+            <${Cifra} valor=${entro} tam="md" tono=${entro > 0 ? "tinta" : ""} />
+          </div>
+          <div class="cara salio">
+            <span class="cara-rotulo">Salió</span>
+            <${Cifra} valor=${salio} tam="md" />
+          </div>
+        </div>
+        <div class="balance-neto">
+          <span>Neto</span>
+          <${Cifra} valor=${entro - salio} signo=${true} tam="md" />
+        </div>
+      </div>
+    </section>`;
+}
+
 /* El elemento firma: dos marcas en una misma escala — dónde va el ciclo
    y dónde va el gasto. Si el gasto adelanta al calendario, tinta roja. */
 function Ritmo({ ciclo, presupuestos, gastos }) {
@@ -219,31 +254,45 @@ function Sobre({ b, ciclo, animar, onAjustar }) {
     </li>`;
 }
 
+/* La barra mide el gasto del día; el triángulo de arriba marca que ese día
+   entró dinero. Marca y no barra a propósito: un salario de cinco cifras en
+   la misma escala que un almuerzo de doscientos deja todas las barras de
+   gasto pegadas al suelo. La magnitud de las entradas la lleva el balance
+   de arriba; acá solo importa cuándo cayeron. */
 function Cinta({ serie, ciclo }) {
   const max = Math.max(...serie.map((d) => Number(d.gastos) || 0), 0);
-  if (max <= 0) {
-    return html`<p class="vacio">Sin gastos en este ciclo. El primero que registres aparece aquí.</p>`;
+  const conEntrada = serie.filter((d) => Number(d.ingresos) > 0).length;
+  if (max <= 0 && !conEntrada) {
+    return html`<p class="vacio">Sin movimientos en este ciclo. El primero que registres aparece aquí.</p>`;
   }
   const conGasto = serie.filter((d) => Number(d.gastos) > 0).length;
-  const promedio = serie.reduce((a, d) => a + Number(d.gastos || 0), 0) / Math.max(conGasto, 1);
+  const promedio = conGasto
+    ? serie.reduce((a, d) => a + Number(d.gastos || 0), 0) / conGasto
+    : 0;
 
   return html`
     <div class="cinta">
-      <div class="cinta-barras" role="img" aria-label=${`Gasto diario, máximo ${L(max)}`}>
+      <div class="cinta-barras" role="img"
+           aria-label=${`Gasto diario, máximo ${L(max)}.` +
+                        (conEntrada ? ` ${conEntrada} ${conEntrada === 1 ? "día" : "días"} con entrada.` : "")}>
         ${serie.map((d) => {
           const g = Number(d.gastos) || 0;
-          const h = g > 0 ? Math.max((100 * g) / max, 3) : 0;
+          const e = Number(d.ingresos) || 0;
+          const h = g > 0 && max > 0 ? Math.max((100 * g) / max, 3) : 0;
           const hoy = d.dia === HOY;
           return html`
             <div class=${`dia ${hoy ? "hoy" : ""} ${g > 0 ? "con" : ""}`} key=${d.dia}
-                 title=${`${d.dia}: L ${L(g)}`}>
+                 title=${`${d.dia}: L ${L(g)}` + (e ? ` · entró L ${L(e)}` : "")}>
+              ${e > 0 ? html`<span class="dia-entrada" aria-hidden="true"></span>` : null}
               <div class="dia-barra" style=${`height:${h}%`}></div>
             </div>`;
         })}
       </div>
       <div class="cinta-pie">
         <span>${ciclo.desde.slice(8)}/${ciclo.desde.slice(5, 7)}</span>
-        <span class="cinta-prom">promedio L ${L(promedio)} por día con gasto</span>
+        <span class="cinta-prom">
+          ${conGasto ? `promedio L ${L(promedio)} por día con gasto` : "sin gastos todavía"}
+        </span>
         <span>${ciclo.hasta.slice(8)}/${ciclo.hasta.slice(5, 7)}</span>
       </div>
     </div>`;
@@ -856,6 +905,8 @@ function App() {
         : html`
           <${Ritmo} ciclo=${c} presupuestos=${datos.presupuestos} gastos=${datos.resumen.gastos} />
 
+          <${Balance} resumen=${datos.resumen} />
+
           <section>
             <${Regla} etiqueta="Presupuestos">
               ${(() => {
@@ -891,7 +942,8 @@ function App() {
 
           ${v2 && html`
             <section>
-              <${Regla} etiqueta="Gasto diario" /><${Cinta} serie=${datos.serie} ciclo=${c} />
+              <${Regla} etiqueta="Día por día">▲ entró<//>
+              <${Cinta} serie=${datos.serie} ciclo=${c} />
             </section>`}
 
           <section>

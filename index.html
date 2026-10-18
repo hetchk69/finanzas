@@ -58,6 +58,8 @@ section{margin-top:30px}
 .cifra i{font-style:normal; font-weight:400; font-size:.78em; color:var(--ink3); margin-right:.28em}
 .cifra.rojo{color:var(--over)}
 .cifra.gr{font-size:30px; font-weight:700; letter-spacing:-.02em}
+.cifra.md{font-size:19px; font-weight:700; letter-spacing:-.01em}
+.cifra.tinta{color:var(--accent)}
 
 /* ---- cabecera ---- */
 .cabecera{display:flex; align-items:flex-start; justify-content:space-between; gap:14px}
@@ -239,9 +241,35 @@ section{margin-top:30px}
 
 .hoja-nota{margin:-6px 0 16px; font-size:13px; color:var(--ink2)}
 
+/* ---- balance del ciclo: las dos caras del libro ---- */
+.balance{
+  background:var(--card); border:1px solid var(--rule); border-radius:3px;
+  box-shadow:var(--sombra); overflow:hidden;
+}
+.balance .caras{display:grid; grid-template-columns:1fr 1fr}
+.balance .cara{padding:14px 16px; min-width:0}
+.balance .cara.salio{border-left:1px solid var(--rule)}
+.cara-rotulo{
+  display:block; margin-bottom:7px; font-size:10px; letter-spacing:.09em;
+  text-transform:uppercase; color:var(--ink3);
+}
+.balance-neto{
+  display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+  padding:11px 16px; border-top:1px solid var(--rule); background:var(--banda);
+}
+.balance-neto span{
+  font-size:10px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink2);
+}
+
 /* ---- cinta del mes ---- */
 .cinta-barras{display:flex; align-items:flex-end; gap:2px; height:82px; padding:0 1px}
-.dia{flex:1; height:100%; display:flex; align-items:flex-end; border-radius:1px}
+.dia{flex:1; height:100%; display:flex; align-items:flex-end; border-radius:1px; position:relative}
+/* Triángulo de entrada: marca presencia, no magnitud. */
+.dia-entrada{
+  position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:0; height:0; border-left:3px solid transparent; border-right:3px solid transparent;
+  border-bottom:5px solid var(--accent);
+}
 .dia-barra{width:100%; background:var(--ink3); opacity:.42; border-radius:1px; transition:height .5s ease}
 .dia.con .dia-barra{background:var(--accent); opacity:.85}
 .dia.hoy .dia-barra{background:var(--ink); opacity:1}
