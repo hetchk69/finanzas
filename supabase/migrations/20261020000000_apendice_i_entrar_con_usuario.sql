@@ -52,6 +52,16 @@
 -- Va en una transacción con su propia verificación al final: o se
 -- mueve todo, o no se mueve nada. Lo peor sería quedar a medias, con
 -- anon sin permisos y authenticated todavía sin recibirlos.
+--
+-- Se saltan las funciones que pertenecen a una extensión (pg_depend
+-- con deptype 'e'). La primera corrida tropezó con las cuatro de
+-- `unaccent`, que el apéndice F instaló en public para norm(): no leen
+-- ni escriben nada del libro —le quitan tildes a un texto— y no son
+-- nuestras. El permiso a PUBLIC lo otorgó el dueño de la extensión, y
+-- en Postgres nadie revoca lo que no otorgó: el revoke no hacía nada y
+-- no avisaba, y la verificación las seguía viendo. Para quien llega sin
+-- sesión igual quedan cerradas: el guardia de I2 corta cualquier
+-- llamada sin sesión antes de que llegue a una función.
 -- ------------------------------------------------------------
 begin;
 
@@ -67,6 +77,9 @@ begin
     where n.nspname = 'public'
       and p.prokind in ('f', 'p')
       and p.proname <> 'solo_el_dueno'
+      and not exists (select 1 from pg_depend d
+                      where d.classid = 'pg_proc'::regclass
+                        and d.objid = p.oid and d.deptype = 'e')
       and has_function_privilege('anon', p.oid, 'execute')
   loop
     -- PUBLIC también: anon hereda de ahí, y revocarle solo a anon lo
@@ -89,6 +102,9 @@ begin
   where n.nspname = 'public'
     and p.prokind in ('f', 'p')
     and p.proname <> 'solo_el_dueno'
+    and not exists (select 1 from pg_depend d
+                    where d.classid = 'pg_proc'::regclass
+                      and d.objid = p.oid and d.deptype = 'e')
     and has_function_privilege('anon', p.oid, 'execute');
 
   if quedan is not null then
@@ -181,6 +197,31 @@ begin
     raise notice 'I2: dueño anotado.';
   end if;
 end $$;
+
+
+-- ------------------------------------------------------------
+-- Resumen en la tabla de resultados. El SQL Editor no siempre muestra
+-- los avisos de arriba; esta fila sí sale siempre. Lo esperado:
+--   anon_ejecuta 0 · authenticated_ejecuta 14 · duenos 1 · guardia true
+-- ------------------------------------------------------------
+with nuestras as (
+  select p.oid
+  from pg_proc p
+  join pg_namespace n on n.oid = p.pronamespace
+  where n.nspname = 'public'
+    and p.prokind in ('f', 'p')
+    and p.proname <> 'solo_el_dueno'
+    and not exists (select 1 from pg_depend d
+                    where d.classid = 'pg_proc'::regclass
+                      and d.objid = p.oid and d.deptype = 'e')
+)
+select
+  (select count(*) from nuestras where has_function_privilege('anon', oid, 'execute'))          as anon_ejecuta,
+  (select count(*) from nuestras where has_function_privilege('authenticated', oid, 'execute')) as authenticated_ejecuta,
+  (select count(*) from public.dueno)                                                            as duenos,
+  exists (select 1 from pg_roles r, unnest(r.rolconfig) c
+          where r.rolname = 'authenticator'
+            and c = 'pgrst.db_pre_request=public.solo_el_dueno')                                 as guardia;
 
 
 -- ------------------------------------------------------------

@@ -240,10 +240,11 @@ teléfono la ofrece guardar y después la rellena con Face ID.
 2. **Apagar el registro público.** En la configuración de Authentication,
    desmarcar «Allow new users to sign up». Si queda prendido, cualquiera que
    conozca la URL del proyecto puede crearse una cuenta.
-3. **Aplicar el apéndice I** en el SQL Editor. Tiene que avisar
-   `I1: 14 funciones pasaron de anon a authenticated` y `I2: dueño anotado`.
-   Si dice que no anotó dueño, revisa que exista exactamente un usuario y
-   córrelo otra vez.
+3. **Aplicar el apéndice I** en el SQL Editor. En la tabla de resultados
+   tiene que salir una fila con `anon_ejecuta 0`, `authenticated_ejecuta 14`,
+   `duenos 1` y `guardia true`. Si `duenos` sale en 0, revisa que exista
+   exactamente un usuario y córrelo otra vez. Si se corta con un error, no
+   queda nada a medias: el traspaso de permisos va en una transacción.
 4. **Comprobar** que la anon key ya no abre nada: la llamada `curl` del final
    del apéndice tiene que devolver `401`.
 5. **Recién ahí**, pegar la anon key en la constante `ANON` de `app.js` y
