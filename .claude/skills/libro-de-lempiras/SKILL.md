@@ -37,10 +37,15 @@ variante oscura, por decisión.
 **El rojo está reservado.** `--over` se usa para el sobregiro y el déficit, y
 para nada más. Si todo puede ponerse rojo, el rojo deja de avisar.
 
-**Tipografía: Archivo para texto, JetBrains Mono para cifras**, con
+**Tipografía: Archivo para texto, Manrope para cifras**, con
 `font-variant-numeric:tabular-nums` en cualquier columna de números — si no
-alinean, el ojo no puede comparar. El signo de lempira va subordinado al número:
-más chico, en `--ink3`, nunca del tamaño de la cifra.
+alinean, el ojo no puede comparar. Manrope es proporcional: sin `tabular-nums`
+los montos de una lista no quedan uno debajo del otro. La excepción es la cifra
+que va sola, sin columna (la grande del medidor, el total de la dona): ahí van
+cifras proporcionales, porque con las tabulares los «1» quedan con hueco. Hasta
+octubre de 2026 las cifras iban en JetBrains Mono, y se cambió porque parecían
+una terminal. El signo de lempira va subordinado al número: más chico, en
+`--ink3`, nunca del tamaño de la cifra.
 
 **Las listas son pliegos.** Presupuestos, cuentas, metas, asientos y la leyenda
 por categoría van dentro de `.pliego`: una hoja blanca con su borde y su sombra

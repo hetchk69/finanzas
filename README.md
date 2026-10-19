@@ -182,8 +182,8 @@ tinta roja. Cada sobre de presupuesto lleva además su propia marca de ritmo, as
 que no solo dice cuánto queda sino si vas adelantado. Esa es la pregunta que un
 presupuesto debe responder, y la primera versión no la respondía nunca.
 
-Tipografías: **Archivo** y **JetBrains Mono**, con cifras tabulares y el signo de
-lempira subordinado al número.
+Tipografías: **Archivo** para el texto y **Manrope** para las cifras, tabulares
+en las columnas y el signo de lempira subordinado al número.
 
 ### Dos vistas
 
