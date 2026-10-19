@@ -291,6 +291,39 @@ section{margin-top:30px}
 }
 .cinta-prom{text-align:center}
 
+/* ============================================================
+   Pliego: cada lista es una hoja blanca puesta sobre el escritorio
+   teñido, con renglones alternos. El fondo guía la fila completa en
+   vez de obligar al ojo a saltar de columna, que es lo que hace el
+   papel tabular de contabilidad desde antes de que hubiera pantallas.
+   ============================================================ */
+.pliego{
+  background:var(--hundido); border:1px solid var(--rule);
+  border-radius:3px; padding:9px;
+}
+.pliego > ul{
+  background:var(--card); border:1px solid var(--rule); border-radius:2px;
+  overflow:hidden; margin:0;
+  box-shadow:0 1px 0 rgba(20,28,40,.04), 0 14px 28px -26px rgba(20,28,40,.7);
+}
+/* La banda va en la fila, no en el botón: así cubre el ancho de la hoja
+   aunque el control interior tenga su propio relleno. */
+.pliego > ul > li:nth-child(odd){background:var(--banda)}
+.pliego > ul > li + li{border-top:1px dotted var(--rule)}
+/* Las listas traían su propia separación; dentro del pliego sobra y se
+   vería doble contra la punteada de arriba. */
+.pliego .cuentas li, .pliego .sobre, .pliego .leyenda li{border-bottom:0}
+.pliego .asiento{border-bottom:0}
+.pliego .leyenda{margin-top:0; border-top:0}
+.pliego .asientos{border-top:0}
+/* Relleno lateral en la fila, para que el texto no toque el canto de la hoja. */
+.pliego .cuentas li{padding-left:12px; padding-right:12px}
+.pliego .asiento{padding-left:12px; padding-right:12px}
+.pliego .sobre-btn{padding-left:12px; padding-right:12px}
+.pliego .leyenda button{padding-left:12px; padding-right:12px}
+/* Sobre una banda, el hover tiene que ser más oscuro que la banda misma. */
+.pliego .sobre-btn:hover, .pliego .leyenda button:hover{background:var(--hundido)}
+
 /* ---- cuentas ---- */
 .cuentas{list-style:none; margin:0; padding:0}
 .cuentas li{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0; border-bottom:1px solid var(--rule)}
@@ -300,7 +333,6 @@ section{margin-top:30px}
 
 /* ---- asientos: el renglón reglado, con banda alterna ---- */
 .asientos{list-style:none; margin:0; padding:0; border-top:1px solid var(--rule)}
-.asientos li:nth-child(odd){background:var(--banda)}
 .asiento{
   display:grid; grid-template-columns:38px 1fr auto; gap:13px; align-items:center;
   width:100%; padding:11px 10px; border:0; border-bottom:1px solid var(--rule);

@@ -550,7 +550,7 @@ function Graficos({ des, presupuestos, cargando, onRango, onAjustar }) {
       </div>
 
       <${Regla} etiqueta="Por categoría">toca para ajustar el límite<//>
-      <ul class="leyenda">
+      <div class="pliego"><ul class="leyenda">
         ${des.categorias.map((c) => {
           const t = Number(c.total);
           const p = total ? (100 * t) / total : 0;
@@ -571,7 +571,7 @@ function Graficos({ des, presupuestos, cargando, onRango, onAjustar }) {
               </button>
             </li>`;
         })}
-      </ul>
+      </ul></div>
     </div>`;
 }
 
@@ -978,10 +978,10 @@ function App() {
               })()}
             <//>
             ${datos.presupuestos.length
-              ? html`<ul class="sobres">
+              ? html`<div class="pliego"><ul class="sobres">
                   ${datos.presupuestos.map((b) => html`
                     <${Sobre} key=${b.categoria} b=${b} ciclo=${c} animar=${animar} onAjustar=${setAjustando} />`)}
-                </ul>`
+                </ul></div>`
               : html`<p class="vacio">Ninguna categoría tiene límite todavía.</p>`}
 
             ${(() => {
@@ -1013,19 +1013,19 @@ function App() {
               ${(() => { const t = datos.saldos.reduce((a, s) => a + Number(s.saldo), 0);
                          return html`total <${Cifra} valor=${t} />`; })()}
             <//>
-            <ul class="cuentas">
+            <div class="pliego"><ul class="cuentas">
               ${datos.saldos.map((s) => html`
                 <li key=${s.cuenta}>
                   <span><b>${s.cuenta}</b><small>${s.tipo}</small></span>
                   <${Cifra} valor=${s.saldo} />
                 </li>`)}
-            </ul>
+            </ul></div>
           </section>
 
           ${datos.metas.length > 0 && html`
             <section>
               <${Regla} etiqueta="Metas" />
-              <ul class="sobres">
+              <div class="pliego"><ul class="sobres">
                 ${datos.metas.map((m) => html`
                   <li class="sobre estatico" key=${m.meta}>
                     <div class="sobre-cab">
@@ -1042,16 +1042,16 @@ function App() {
                       <span class="sobre-pct">${pct(m.pct)}</span>
                     </div>
                   </li>`)}
-              </ul>
+              </ul></div>
             </section>`}
 
           ${v2 && html`
             <section>
               <${Regla} etiqueta="Asientos">toca uno para corregirlo<//>
               ${datos.movimientos.length
-                ? html`<ul class="asientos">
+                ? html`<div class="pliego"><ul class="asientos">
                     ${datos.movimientos.map((m) => html`<${Asiento} key=${m.id} m=${m} onAbrir=${setEditando} />`)}
-                  </ul>`
+                  </ul></div>`
                 : html`<p class="vacio">El libro está en blanco. Registra el primer movimiento abajo.</p>`}
             </section>`}
 
