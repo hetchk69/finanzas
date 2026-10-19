@@ -45,7 +45,9 @@ publicar entera sin filtrar nada. La llave se pega una vez en cada dispositivo.
 ### Funcionando y verificado
 
 **Los apéndices B, C, D y F están aplicados en `dabvugwhzwkmdmsvrazz`.** El E
-no — quedó superado antes de correrlo (ver su archivo y la sección 4).
+no — quedó superado antes de correrlo (ver su archivo y la sección 4). **El G
+está escrito y pendiente de aplicar**: hasta que corra, la base sigue con
+`Banco Atlántida`, `Instalación` y sin DIGER ni CCONCASA.
 
 | RPC | Resultado |
 |---|---|
@@ -62,9 +64,13 @@ vistas es correcto: `anon` recibe `42501 permission denied` en `transactions`,
 `accounts`, `settings`, `goals` y todas las vistas; `run_recurring()` sigue
 rechazando con 401.
 
-**Cuentas reales**: Banco Atlántida (solo débito), BAC Débito, BAC Crédito,
-Efectivo, Ahorros. **Categorías de ingreso**: Salario, Instalación, Desarrollo,
-Otros.
+**Cuentas reales**: Banco Atlántida Débito, BAC Débito, BAC Crédito, Efectivo,
+Ahorros. **Categorías de ingreso**: DIGER, CCONCASA, Desarrollo, Instalaciones,
+Otros (y Salario, mientras no se archive).
+
+Esos nombres los fija el **apéndice G**, que sale de armar el atajo: los que se
+escriben en el teléfono son los que mandan, y la base se renombró para
+parecerse a ellos.
 
 ### Falta hacer
 

@@ -66,7 +66,7 @@ rama de entrada va *entre* «Si» y «Si no»; lo de salida, entre «Si no» y
 
 **5. Texto** — a qué cuenta entra el dinero:
 ```
-Banco Atlántida
+Banco Atlántida Débito
 BAC Débito
 Efectivo
 ```
@@ -80,9 +80,10 @@ Efectivo
 
 **8. Texto** — categorías de ingreso:
 ```
-💼 Salario
-🔧 Instalación
+🏛️ DIGER
+🏢 CCONCASA
 💻 Desarrollo
+🔧 Instalaciones
 ✨ Otros
 ```
 
@@ -122,7 +123,7 @@ Efectivo
 Efectivo
 BAC Crédito
 BAC Débito
-Banco Atlántida
+Banco Atlántida Débito
 ```
 
 > Efectivo va primero porque es lo más frecuente y queda bajo el pulgar.
