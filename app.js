@@ -50,6 +50,24 @@ const faltaV2 = (e) => e.status === 404 || e.code === "PGRST202";
 const nf = new Intl.NumberFormat("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const nf0 = new Intl.NumberFormat("es-HN", { maximumFractionDigits: 0 });
 const L = (n) => nf.format(Number(n || 0));
+
+/* get_lists() pega el emoji al nombre para que el atajo lo muestre; dashboard()
+   devuelve el nombre pelado. Comparar los dos en crudo dejaba las diez
+   categorías listadas como "sin límite" —incluidas las cinco que sí tenían— y
+   mandaba el emoji dentro del nombre a set_budget. */
+const sinEmoji = (x) => String(x || "").replace(/[\p{Extended_Pictographic}\uFE0F\u200D]/gu, "").trim();
+const norm = (x) => sinEmoji(x).normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+
+/* El folio se lee, no se descifra: el rango ISO es para la base. */
+const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
+               "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+function folio(c) {
+  const m = Number(String(c.desde).split("-")[1]);
+  const restan = Math.max(c.dias_total - c.dia_actual, 0);
+  const cola = restan === 0 ? "último día" : restan === 1 ? "queda 1 día" : `quedan ${restan} días`;
+  const nombre = MESES[m - 1] || "";
+  return `${nombre.charAt(0).toUpperCase()}${nombre.slice(1)} · ${cola}`;
+}
 const pct = (n) => `${nf0.format(Number(n || 0))}%`;
 const HOY = new Date().toLocaleDateString("en-CA");
 const MES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
@@ -119,25 +137,40 @@ function Balance({ resumen }) {
 }
 
 /* El elemento firma: dos marcas en una misma escala — dónde va el ciclo
-   y dónde va el gasto. Si el gasto adelanta al calendario, tinta roja. */
-function Ritmo({ ciclo, presupuestos, gastos }) {
+   y dónde va el gasto. Si el gasto adelanta al calendario, tinta roja.
+   Una sola cifra grande contesta "cuánto llevo"; lo demás queda subordinado.
+   Antes había tres del mismo tamaño y ninguna ganaba. */
+function Ritmo({ ciclo, presupuestos, onRegistrar }) {
   const limite = presupuestos.reduce((a, b) => a + Number(b.limite), 0);
   const gastado = presupuestos.reduce((a, b) => a + Number(b.gastado), 0);
   if (!limite) return null;
+
+  /* Con el ciclo en blanco no hay veredicto que dar: "Vas holgado · L 0.00"
+     es cierto e inútil. En su lugar, qué va a aparecer aquí y cómo empezar. */
+  if (!gastado) {
+    return html`
+      <section class="ritmo estreno">
+        <p class="estreno-titulo">El ciclo está sin estrenar.</p>
+        <p class="estreno-queva">Al primer gasto vas a ver aquí cuánto llevas de los <b>L ${L(limite)}</b> que te pusiste, y si vas adelantado al calendario.</p>
+        <button class="btn primario" type="button" onClick=${onRegistrar}>Anotar el primero</button>
+      </section>`;
+  }
 
   const pGasto = Math.min((100 * gastado) / limite, 100);
   const pCiclo = Math.min((100 * ciclo.dia_actual) / ciclo.dias_total, 100);
   const delta = pGasto - pCiclo;
   const estado = delta > 8 ? "sobre" : delta < -8 ? "holgado" : "a-ritmo";
   const leyenda = { sobre: "Vas sobre el ritmo", holgado: "Vas holgado", "a-ritmo": "Vas a ritmo" }[estado];
-  const proyeccion = (Number(gastos) / Math.max(ciclo.dia_actual, 1)) * ciclo.dias_total;
+  /* La proyección sale de la misma base que la cifra grande —lo gastado en
+     categorías con límite—. Antes venía del gasto total del ciclo, así que las
+     dos cifras de la tarjeta no hablaban de lo mismo. */
+  const proyeccion = (gastado / Math.max(ciclo.dia_actual, 1)) * ciclo.dias_total;
 
   return html`
     <section class=${`ritmo ${estado}`}>
-      <div class="ritmo-cab">
-        <span class="ritmo-estado">${leyenda}</span>
-        <span class="ritmo-dias">quedan ${ciclo.dias_total - ciclo.dia_actual} días</span>
-      </div>
+      <p class="ritmo-rotulo">Llevas gastado</p>
+      <${Cifra} valor=${gastado} tam="gr" />
+      <p class="ritmo-veredicto"><b>${leyenda}</b> · de L ${L(limite)} presupuestados</p>
 
       <div class="escala" role="img"
            aria-label=${`Gastado ${pct(pGasto)} del presupuesto, ciclo ${pct(pCiclo)} transcurrido`}>
@@ -151,11 +184,7 @@ function Ritmo({ ciclo, presupuestos, gastos }) {
         </div>
       </div>
 
-      <dl class="ritmo-datos">
-        <div><dt>Gastado</dt><dd><${Cifra} valor=${gastado} /></dd></div>
-        <div><dt>Presupuesto</dt><dd><${Cifra} valor=${limite} /></dd></div>
-        <div><dt>Proyección al cierre</dt><dd><${Cifra} valor=${proyeccion} /></dd></div>
-      </dl>
+      <p class="ritmo-cierre">A este paso el ciclo cierra en <b>L ${L(proyeccion)}</b>.</p>
     </section>`;
 }
 
@@ -845,6 +874,11 @@ function App() {
   const [enRegistrar, setEnRegistrar] = useState(false);
   const refMonto = useRef(null);
 
+  const irARegistrar = useCallback(() => {
+    document.getElementById("registrar")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setTimeout(() => refMonto.current?.focus(), 400);
+  }, []);
+
   const notificar = useCallback((m) => {
     setAviso(m);
     setTimeout(() => setAviso((a) => (a === m ? null : a)), 4000);
@@ -939,9 +973,7 @@ function App() {
         <div>
           <h1>Libro de Lempiras</h1>
           ${c
-            ? html`<p class="folio">
-                ${c.desde} <i>—</i> ${c.hasta} · día ${c.dia_actual} de ${c.dias_total}
-              </p>`
+            ? html`<p class="folio">${folio(c)}</p>`
             : html`<p class="folio">Abriendo el libro…</p>`}
         </div>
       </header>
@@ -965,7 +997,9 @@ function App() {
       ${vista === "libro" && (!datos
         ? html`<${Esqueleto} filas=${4} />`
         : html`
-          <${Ritmo} ciclo=${c} presupuestos=${datos.presupuestos} gastos=${datos.resumen.gastos} />
+          <div class="columnas">
+          <div class="col col-a">
+          <${Ritmo} ciclo=${c} presupuestos=${datos.presupuestos} onRegistrar=${irARegistrar} />
 
           <${Balance} resumen=${datos.resumen} />
 
@@ -985,15 +1019,17 @@ function App() {
               : html`<p class="vacio">Ninguna categoría tiene límite todavía.</p>`}
 
             ${(() => {
-              const sin = listas.gastos.filter((g) => !datos.presupuestos.some((b) => b.categoria === g));
+              const sin = listas.gastos.filter(
+                (g) => !datos.presupuestos.some((b) => norm(b.categoria) === norm(g)));
               if (!sin.length) return null;
               return html`
                 <div class="sin-limite">
-                  <p>Sin límite — estas categorías se registran pero no avisan cuánto queda:</p>
+                  <p>Estas se anotan, pero no avisan cuánto queda:</p>
                   <ul>
                     ${sin.map((g) => html`
                       <li key=${g}>
-                        <button type="button" onClick=${() => setAjustando({ categoria: g, limite: null })}>
+                        <button type="button"
+                                onClick=${() => setAjustando({ categoria: sinEmoji(g), limite: null })}>
                           ${g}<i>+</i>
                         </button>
                       </li>`)}
@@ -1007,7 +1043,9 @@ function App() {
               <${Regla} etiqueta="Día por día">▲ entró<//>
               <${Cinta} serie=${datos.serie} ciclo=${c} />
             </section>`}
+          </div>
 
+          <div class="col col-b">
           <section>
             <${Regla} etiqueta="Cuentas">
               ${(() => { const t = datos.saldos.reduce((a, s) => a + Number(s.saldo), 0);
@@ -1016,7 +1054,8 @@ function App() {
             <div class="pliego"><ul class="cuentas">
               ${datos.saldos.map((s) => html`
                 <li key=${s.cuenta}>
-                  <span><b>${s.cuenta}</b><small>${s.tipo}</small></span>
+                  <span><b>${s.cuenta}</b>${norm(s.cuenta).includes(norm(s.tipo))
+                    ? null : html`<small>${s.tipo}</small>`}</span>
                   <${Cifra} valor=${s.saldo} />
                 </li>`)}
             </ul></div>
@@ -1061,6 +1100,8 @@ function App() {
                         onHecho=${tras} onError=${(m) => notificar(`Error: ${m}`)} />
             <button class="btn sutil" type="button" onClick=${deshacer}>Deshacer el último</button>
           </section>
+          </div>
+          </div>
         `)}
 
       <details class="conexion">
@@ -1074,10 +1115,8 @@ function App() {
       </details>
 
       ${vista === "libro" && html`
-      <button class=${`fab ${enRegistrar ? "oculto" : ""}`} type="button" onClick=${() => {
-        document.getElementById("registrar").scrollIntoView({ behavior: "smooth", block: "start" });
-        setTimeout(() => refMonto.current?.focus(), 400);
-      }}>Registrar</button>`}
+      <button class=${`fab ${enRegistrar ? "oculto" : ""}`} type="button"
+              onClick=${irARegistrar}>Registrar</button>`}
 
       ${editando && html`
         <${Corregir} mov=${editando} listas=${listas} onCerrar=${() => setEditando(null)}

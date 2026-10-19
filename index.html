@@ -64,20 +64,16 @@ section{margin-top:30px}
 /* ---- cabecera ---- */
 .cabecera{display:flex; align-items:flex-start; justify-content:space-between; gap:14px}
 .cabecera h1{margin:0; font-size:23px; font-weight:700; letter-spacing:-.025em}
-.folio{
-  margin:5px 0 0; color:var(--ink2);
-  font:400 12px/1.4 "JetBrains Mono", monospace; font-variant-numeric:tabular-nums;
-}
-.folio i{font-style:normal; color:var(--ink3); margin:0 2px}
+.folio{margin:5px 0 0; color:var(--ink2); font:400 13px/1.4 Archivo, sans-serif}
 
 /* ---- la regla: el renglón del libro como divisor de sección ---- */
 .regla{display:flex; align-items:center; gap:12px; margin-bottom:12px}
 .regla h2{
-  margin:0; font-size:11px; font-weight:600; letter-spacing:.13em;
-  text-transform:uppercase; color:var(--ink2); white-space:nowrap;
+  margin:0; font-size:13.5px; font-weight:600; letter-spacing:-.01em;
+  color:var(--ink); white-space:nowrap;
 }
 .regla-linea{flex:1; height:1px; background:var(--rule)}
-.regla-dato{font:400 11px/1 "JetBrains Mono", monospace; color:var(--ink3); white-space:nowrap}
+.regla-dato{font:400 12px/1 Archivo, sans-serif; color:var(--ink3); white-space:nowrap}
 .regla-dato .cifra{font-size:11px}
 
 /* ---- FIRMA: el medidor de ritmo ---- */
@@ -88,12 +84,19 @@ section{margin-top:30px}
 }
 .ritmo.sobre{border-left-color:var(--over)}
 .ritmo.holgado{border-left-color:var(--accent)}
-.ritmo-cab{display:flex; align-items:baseline; justify-content:space-between; gap:12px}
-.ritmo-estado{font-size:19px; font-weight:600; letter-spacing:-.015em}
-.ritmo.sobre .ritmo-estado{color:var(--over)}
-.ritmo-dias{font:400 12px "JetBrains Mono", monospace; color:var(--ink3)}
+.ritmo-rotulo{margin:0 0 5px; font-size:13px; color:var(--ink3)}
+.ritmo .cifra.gr{display:block}
+.ritmo-veredicto{margin:8px 0 0; font-size:13.5px; color:var(--ink2)}
+.ritmo-veredicto b{font-weight:600; color:var(--ink)}
+.ritmo.sobre .ritmo-veredicto b{color:var(--over)}
 
-.escala{margin-top:16px}
+/* El ciclo sin estrenar no tiene veredicto que dar: dice qué va a salir aquí. */
+.ritmo.estreno{border-left-color:var(--rule)}
+.estreno-titulo{margin:0; font-size:17px; font-weight:600; letter-spacing:-.015em}
+.estreno-queva{margin:8px 0 16px; font-size:13.5px; line-height:1.5; color:var(--ink2)}
+.estreno-queva b{font-weight:600; color:var(--ink); white-space:nowrap}
+
+.escala{margin-top:18px}
 .escala-pista{position:relative; height:12px; background:var(--hundido); border-radius:2px}
 .escala-gasto{
   position:absolute; inset:0 auto 0 0; background:var(--accent); border-radius:2px;
@@ -103,21 +106,20 @@ section{margin-top:30px}
 .escala-ciclo{position:absolute; top:-5px; bottom:-5px; width:2px; background:var(--ink); border-radius:2px}
 .escala-ciclo span{
   position:absolute; top:-15px; left:50%; transform:translateX(-50%);
-  font:500 9px "JetBrains Mono", monospace; letter-spacing:.06em;
-  text-transform:uppercase; color:var(--ink2);
+  font:500 9.5px "JetBrains Mono", monospace; letter-spacing:.04em; color:var(--ink2);
 }
 .escala-pie{
   display:flex; justify-content:space-between; margin-top:9px;
   font:400 11px "JetBrains Mono", monospace; color:var(--ink3);
 }
 
-.ritmo-datos{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:18px 0 0; padding-top:15px; border-top:1px solid var(--rule)}
-.ritmo-datos div{min-width:0}
-.ritmo-datos dt{font-size:10px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3)}
-.ritmo-datos dd{margin:5px 0 0}
-@media (max-width:430px){
-  .ritmo-datos{grid-template-columns:1fr 1fr}
-  .ritmo-datos div:last-child{grid-column:1/-1; padding-top:10px; border-top:1px solid var(--rule)}
+.ritmo-cierre{
+  margin:16px 0 0; padding-top:13px; border-top:1px solid var(--rule);
+  font-size:13px; color:var(--ink3);
+}
+.ritmo-cierre b{
+  font:500 13px "JetBrains Mono", monospace; font-variant-numeric:tabular-nums;
+  color:var(--ink2); white-space:nowrap;
 }
 
 /* ---- sobres de presupuesto ---- */
@@ -259,17 +261,12 @@ section{margin-top:30px}
 .balance .caras{display:grid; grid-template-columns:1fr 1fr}
 .balance .cara{padding:14px 16px; min-width:0}
 .balance .cara.salio{border-left:1px solid var(--rule)}
-.cara-rotulo{
-  display:block; margin-bottom:7px; font-size:10px; letter-spacing:.09em;
-  text-transform:uppercase; color:var(--ink3);
-}
+.cara-rotulo{display:block; margin-bottom:6px; font-size:12.5px; color:var(--ink3)}
 .balance-neto{
   display:flex; align-items:baseline; justify-content:space-between; gap:12px;
   padding:11px 16px; border-top:1px solid var(--rule); background:var(--banda);
 }
-.balance-neto span{
-  font-size:10px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink2);
-}
+.balance-neto span{font-size:12.5px; font-weight:500; color:var(--ink2)}
 
 /* ---- cinta del mes ---- */
 .cinta-barras{display:flex; align-items:flex-end; gap:2px; height:82px; padding:0 1px}
@@ -358,7 +355,7 @@ section{margin-top:30px}
 .campos{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:13px}
 .campo{display:block; min-width:0}
 .campo.ancho{grid-column:1/-1}
-.campo>span{display:block; margin-bottom:6px; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink3)}
+.campo>span{display:block; margin-bottom:6px; font-size:12.5px; color:var(--ink3)}
 .campo input,.campo select{
   width:100%; padding:10px 11px; border:1px solid var(--rule); border-radius:3px;
   background:var(--card); color:var(--ink); font:400 15px Archivo, sans-serif;
@@ -440,8 +437,42 @@ section{margin-top:30px}
 .alta .btn{width:100%; padding:13px}
 
 .conexion{margin-top:36px; padding-top:16px; border-top:1px solid var(--rule); font-size:13px; color:var(--ink2)}
-.conexion summary{cursor:pointer; color:var(--ink3); font-size:11px; letter-spacing:.1em; text-transform:uppercase}
+.conexion summary{cursor:pointer; color:var(--ink3); font-size:12.5px}
 .conexion p{margin:12px 0}
+
+/* ============================================================
+   El libro abierto: una página en el teléfono, dos en el escritorio.
+   No se detecta el dispositivo —el user-agent miente: el iPad se anuncia
+   como Mac y una ventana angosta en un portátil merece la vista de
+   teléfono— sino el ancho real de la ventana. En pantalla angosta las dos
+   columnas se deshacen con display:contents, así que el orden del DOM, que
+   es el del teléfono, queda intacto.
+   ============================================================ */
+.col{display:contents}
+
+@media (min-width:900px){
+  .hoja-libro{max-width:1120px; padding-inline:30px; padding-bottom:40px}
+  .cabecera h1{font-size:27px}
+  .columnas{display:grid; grid-template-columns:1.06fr .94fr; column-gap:42px; align-items:start}
+  .col{display:block}
+  /* Registrar es lo que más se usa; en pantalla ancha sube a la cabecera de
+     la columna derecha en vez de esconderse al fondo, y el botón flotante
+     deja de hacer falta. */
+  .col-b{display:flex; flex-direction:column}
+  .col-b>#registrar{order:-1; margin-top:0}
+  .col-a>:first-child{margin-top:0}
+  .fab{display:none}
+}
+
+/* El dedo no tiene hover: los realces reservados al ratón solo se encienden
+   cuando el puntero es fino, para que en el teléfono no queden pegados
+   después de tocar. */
+@media (hover:none){
+  .sobre-btn:hover, .asiento:hover,
+  .pliego .sobre-btn:hover, .pliego .leyenda button:hover{background:none}
+  .sin-limite button:hover{border-style:dashed; border-color:var(--rule); color:var(--ink2)}
+  .sin-limite button:hover i{color:var(--ink3)}
+}
 
 @media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
 </style>
