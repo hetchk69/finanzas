@@ -5,35 +5,138 @@
 const { html, render, useState, useEffect, useMemo, useRef, useCallback } = htmPreact;
 
 /* ---------- conexión ---------- */
-const DEF_URL = "https://dabvugwhzwkmdmsvrazz.supabase.co";
+const URL_ = "https://dabvugwhzwkmdmsvrazz.supabase.co";
+
+/* La anon key va escrita aquí, a la vista, y eso está bien — pero SOLO
+   después de aplicar el apéndice I. Ese apéndice le quita todo a `anon`:
+   desde ahí la llave solo sirve para tocar la puerta de Supabase Auth, y la
+   credencial real es tu usuario y tu contraseña. Antes del I, publicarla le
+   regala el libro entero a quien abra ver-fuente.
+   Mientras esté vacía, se usa la que cada dispositivo ya tenía pegada. */
+const ANON = "";
 
 const ls = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch { return d; } };
 const lset = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
+const ldel = (k) => { try { localStorage.removeItem(k); } catch {} };
 
-/* Alta por enlace: #k=<llave>&u=<url>. El fragmento no viaja al servidor,
-   así que la llave no queda en ningún registro de acceso. */
-(function bootstrap() {
-  const h = location.hash;
-  if (!h) return;
-  const k = h.match(/[#&]k=([^&]*)/), u = h.match(/[#&]u=([^&]*)/);
-  let toco = false;
-  if (k?.[1]) { lset("quanto.key", decodeURIComponent(k[1])); toco = true; }
-  if (u?.[1]) { lset("quanto.url", decodeURIComponent(u[1])); toco = true; }
-  if (toco) {
-    try { history.replaceState(null, "", location.pathname + location.search); }
-    catch { location.hash = ""; }
+const LLAVE = ANON || ls("quanto.key", "");
+if (ANON) ldel("quanto.key");
+ldel("quanto.url");
+ldel("quanto.correo");
+
+/* ---------- sesión ----------
+   Supabase Auth por su API REST, sin supabase-js: el proyecto no carga
+   librerías en tiempo de ejecución, y lo que hace falta son tres llamadas.
+   En localStorage queda la sesión —los dos tokens y cuándo vence el corto—,
+   nunca la contraseña. El refresh_token no caduca solo: la sesión dura hasta
+   que se cierre a mano, que es justo lo que se pidió para no escribir la
+   contraseña cada vez. */
+let sesion = null;
+try { sesion = JSON.parse(ls("quanto.sesion", "") || "null"); } catch {}
+
+function guardarSesion(x) {
+  sesion = x;
+  if (x) lset("quanto.sesion", JSON.stringify(x)); else ldel("quanto.sesion");
+}
+
+async function auth(ruta, cuerpo, token) {
+  const r = await fetch(`${URL_}/auth/v1/${ruta}`, {
+    method: "POST",
+    headers: { apikey: LLAVE, "Content-Type": "application/json",
+               ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    body: cuerpo ? JSON.stringify(cuerpo) : undefined,
+  });
+  const txt = await r.text();
+  let j = null;
+  try { j = txt ? JSON.parse(txt) : null; } catch {}
+  if (!r.ok) {
+    const e = new Error(j?.msg || j?.error_description || j?.message || `HTTP ${r.status}`);
+    e.status = r.status; e.code = j?.error_code || j?.error;
+    throw e;
   }
-})();
+  return j;
+}
 
-let URL_ = ls("quanto.url", DEF_URL).replace(/\/+$/, "");
-let KEY_ = ls("quanto.key", "");
+const aSesion = (t) => ({
+  access_token: t.access_token,
+  refresh_token: t.refresh_token,
+  /* expires_at viene en segundos; hay versiones que solo mandan expires_in. */
+  vence: t.expires_at ? t.expires_at * 1000 : Date.now() + (t.expires_in || 3600) * 1000,
+  correo: t.user?.email || sesion?.correo || "",
+});
 
-async function rpc(fn, body) {
+/* Supabase Auth entra con correo, pero aquí se escribe un usuario. Lo que no
+   trae @ se completa con el dominio del propio sitio: es de hetchk69, nadie
+   más puede recibir correo ahí, y en el panel el usuario se crea como
+   <usuario>@hetchk69.github.io. Se pasa a minúsculas porque el teclado del
+   iPhone pone mayúscula a la primera letra y Supabase guarda el correo en
+   minúsculas. Un correo completo, con @, pasa tal cual. */
+const DOMINIO = "hetchk69.github.io";
+const aCorreo = (u) => {
+  const x = u.trim().toLowerCase();
+  return x.includes("@") ? x : `${x}@${DOMINIO}`;
+};
+const aUsuario = (c) => String(c || "").replace(`@${DOMINIO}`, "");
+
+async function entrar(correo, clave) {
+  guardarSesion(aSesion(await auth("token?grant_type=password", { email: correo, password: clave })));
+}
+
+/* Un solo refresco en vuelo. Al abrir, el tablero lanza dos o tres llamadas
+   a la vez; si cada una refrescara por su cuenta gastarían el mismo
+   refresh_token —que Supabase rota en cada uso— y alguna perdería. */
+let refrescando = null;
+function refrescar() {
+  if (!refrescando) {
+    refrescando = auth("token?grant_type=refresh_token", { refresh_token: sesion.refresh_token })
+      .then((t) => guardarSesion(aSesion(t)))
+      .finally(() => { refrescando = null; });
+  }
+  return refrescando;
+}
+
+async function salir() {
+  const t = sesion?.access_token;
+  guardarSesion(null);
+  if (t) { try { await auth("logout", null, t); } catch {} }
+}
+
+/* Cuando la sesión se cae del todo —el refresh_token ya no sirve— no hay
+   nada que reintentar: la App vuelve a pedir usuario y contraseña. */
+let alPerderSesion = () => {};
+const sinSesion = () => Object.assign(new Error("La sesión se cerró. Vuelve a entrar."), { status: 401 });
+
+async function asegurarSesion() {
+  if (!sesion) { alPerderSesion(); throw sinSesion(); }
+  try { await refrescar(); }
+  catch (e) {
+    /* Sin red no se saca a nadie: el refresh_token sigue sirviendo y el
+       próximo intento con señal lo usa. Solo un rechazo del servidor quiere
+       decir que la sesión murió. */
+    if (!e.status) throw e;
+    guardarSesion(null); alPerderSesion(); throw sinSesion();
+  }
+}
+
+async function rpc(fn, body, reintento = true) {
+  if (!sesion) { alPerderSesion(); throw sinSesion(); }
+  /* Se refresca con un minuto de margen en vez de esperar al 401: el token
+     corto dura una hora y el tablero se queda abierto mucho más. */
+  if (sesion.vence - Date.now() < 60000) await asegurarSesion();
+
   const r = await fetch(`${URL_}/rest/v1/rpc/${fn}`, {
     method: "POST",
-    headers: { apikey: KEY_, Authorization: `Bearer ${KEY_}`, "Content-Type": "application/json" },
+    headers: { apikey: LLAVE, Authorization: `Bearer ${sesion.access_token}`, "Content-Type": "application/json" },
     body: JSON.stringify(body || {}),
   });
+  /* Un 401 con sesión es casi siempre un token vencido antes de tiempo
+     (el teléfono dormido, el reloj corrido): se refresca y se reintenta una
+     vez. Si el segundo también es 401, el motivo es otro —por ejemplo "falta
+     anotar al dueño"— y se muestra tal cual en vez de sacar al usuario. */
+  if (r.status === 401 && reintento) {
+    await asegurarSesion();
+    return rpc(fn, body, false);
+  }
   const txt = await r.text();
   let j = null;
   try { j = txt ? JSON.parse(txt) : null; } catch {}
@@ -829,26 +932,57 @@ function Corregir({ mov, listas, onCerrar, onHecho, onError }) {
     </dialog>`;
 }
 
-/* ---------- alta de la llave ---------- */
-function Alta({ onListo }) {
-  const [url, setUrl] = useState(URL_ || DEF_URL);
-  const [key, setKey] = useState("");
+/* ---------- entrar ----------
+   Los autocomplete username / current-password no son adorno: con ellos el
+   llavero de iCloud ofrece guardar la contraseña y la rellena con Face ID,
+   así que en el teléfono entrar termina siendo un toque. */
+function Entrar({ onListo }) {
+  const [usuario, setUsuario] = useState(ls("quanto.usuario", ""));
+  const [clave, setClave] = useState("");
+  const [error, setError] = useState(null);
+  const [ocupado, setOcupado] = useState(false);
+  const refUsuario = useRef(null);
+  const refClave = useRef(null);
+  useEffect(() => { (usuario ? refClave : refUsuario).current?.focus(); }, []);
+
+  if (!LLAVE) return html`
+    <main class="alta">
+      <h1>Libro de Lempiras</h1>
+      <p class="alerta"><b>Falta la anon key.</b> Va en la constante <code>ANON</code> al
+        principio de <code>app.js</code>, y solo después de aplicar el apéndice I.</p>
+    </main>`;
+
+  async function enviar(ev) {
+    ev.preventDefault();
+    setOcupado(true); setError(null);
+    try {
+      await entrar(aCorreo(usuario), clave);
+      lset("quanto.usuario", usuario.trim().toLowerCase());
+      onListo();
+    } catch (e) {
+      /* Supabase contesta 400 tanto si el usuario no existe como si la
+         contraseña está mal, a propósito: no confirma qué usuarios hay. */
+      setError(e.status === 400 ? "Usuario o contraseña incorrectos." : e.message);
+      setClave("");
+      setOcupado(false);
+      refClave.current?.focus();
+    }
+  }
+
   return html`
     <main class="alta">
       <h1>Libro de Lempiras</h1>
-      <p>Este dispositivo todavía no tiene la llave de acceso. Pégala una vez y queda
-         guardada aquí; no se envía a ningún otro lado.</p>
-      <form onSubmit=${(e) => { e.preventDefault();
-        lset("quanto.url", url.trim().replace(/\/+$/, "")); lset("quanto.key", key.trim());
-        URL_ = url.trim().replace(/\/+$/, ""); KEY_ = key.trim(); onListo(); }}>
-        <label class="campo ancho"><span>Project URL</span>
-          <input type="url" value=${url} onInput=${(e) => setUrl(e.target.value)} spellcheck="false" required />
-        </label>
-        <label class="campo ancho"><span>anon key</span>
-          <input type="password" value=${key} onInput=${(e) => setKey(e.target.value)}
-                 spellcheck="false" required placeholder="eyJhbGciOi…" />
-        </label>
-        <button class="btn primario" type="submit">Entrar</button>
+      <form onSubmit=${enviar}>
+        <label class="campo ancho"><span>Usuario</span>
+          <input ref=${refUsuario} type="text" value=${usuario} autocomplete="username"
+                 autocorrect="off" autocapitalize="off" spellcheck="false" required
+                 onInput=${(e) => { setUsuario(e.target.value); setError(null); }} /></label>
+        <label class="campo ancho"><span>Contraseña</span>
+          <input ref=${refClave} type="password" value=${clave} autocomplete="current-password" required
+                 onInput=${(e) => { setClave(e.target.value); setError(null); }} /></label>
+        ${error && html`<p class="alerta" role="alert">${error}</p>`}
+        <button class="btn primario" type="submit" disabled=${ocupado}>
+          ${ocupado ? "Entrando…" : "Entrar"}</button>
       </form>
     </main>`;
 }
@@ -857,7 +991,9 @@ function Alta({ onListo }) {
    App
    ============================================================ */
 function App() {
-  const [listo, setListo] = useState(Boolean(KEY_));
+  const [fase, setFase] = useState(sesion ? "listo" : "entrar");
+  const listo = fase === "listo";
+  alPerderSesion = () => setFase("entrar");
   const [datos, setDatos] = useState(null);
   const [listas, setListas] = useState({ gastos: [], ingresos: [], cuentas: [] });
   const [v2, setV2] = useState(true);
@@ -962,7 +1098,7 @@ function App() {
     } catch (e) { notificar(`Error: ${e.message}`) }
   }
 
-  if (!listo) return html`<${Alta} onListo=${() => setListo(true)} />`;
+  if (fase === "entrar") return html`<${Entrar} onListo=${() => setFase("listo")} />`;
 
   const c = datos?.ciclo;
 
@@ -1105,13 +1241,12 @@ function App() {
         `)}
 
       <details class="conexion">
-        <summary>Conexión</summary>
-        <p>La llave vive solo en este navegador y únicamente puede ejecutar las
-           funciones otorgadas: no lee tablas ni las borra.</p>
-        <button class="btn" type="button" onClick=${() => {
-          if (!confirm("¿Olvidar la llave en este dispositivo?")) return;
-          lset("quanto.key", ""); KEY_ = ""; setListo(false);
-        }}>Olvidar la llave</button>
+        <summary>Sesión</summary>
+        <p>Entraste como <b>${aUsuario(sesion?.correo) || "—"}</b>. La sesión queda abierta en
+           este navegador hasta que la cierres; tu contraseña no se guarda aquí.</p>
+        <button class="btn" type="button" onClick=${async () => {
+          await salir(); setDatos(null); setDes(null); setFase("entrar");
+        }}>Cerrar sesión</button>
       </details>
 
       ${vista === "libro" && html`

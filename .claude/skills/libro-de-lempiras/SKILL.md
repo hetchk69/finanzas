@@ -121,9 +121,17 @@ dejaba los tres selectores sin selección y mandaba categoría y cuenta vacías:
 el código se veía correcto, en el DOM era `selectedIndex: -1`.
 
 **El SQL va en apéndices idempotentes**, en `supabase/migrations/`, numerados en
-orden de aplicación y con el porqué escrito en comentarios. El orden importa: el
-apéndice B revoca `execute` en bloque y otorga una lista donde `desglose` no
-aparece, así que re-correrlo después del C y el D rompe los Gráficos.
+orden de aplicación y con el porqué escrito en comentarios. El orden importa.
+
+**Desde el apéndice I, toda función se otorga a `authenticated`, nunca a
+`anon`.** El I le quitó todo a `anon` y se lo dio a quien inició sesión; la
+anon key quedó pública en `app.js` y no abre nada. Un apéndice nuevo que
+otorgue algo a `anon` se lo regala a cualquiera que abra ver-fuente.
+
+Por la misma razón, **no se vuelven a correr B, C, D, F ni H**: todos otorgan a
+`anon`. B y F además revocan en bloque y le quitarían todo a `authenticated`,
+dejando al dueño sin libro y al público con él. Si pasa por accidente, correr
+el I otra vez lo deshace: recorre el catálogo y mueve lo que encuentre.
 
 **Nombres de dominio en español** —`gastos`, `categorias`, `monto`, `asientos`,
 `sobres`, `pliego`—; los términos técnicos quedan en inglés cuando ya lo son.
@@ -137,9 +145,12 @@ Los comentarios explican por qué, no qué.
   tiempo de ejecución. La única dependencia externa son las tipografías.
 - No metas modo oscuro, ni siquiera «por completitud».
 - No uses `localStorage` para datos de gastos. La fuente de verdad es Postgres;
-  `localStorage` es solo para la llave y la pestaña recordada.
-- No pongas la anon key en ningún archivo del repo. Se pega una vez por
-  dispositivo, o entra por el fragmento `#k=`.
+  `localStorage` es solo para la sesión, el correo recordado y la pestaña.
+- No guardes la contraseña en ningún lado: la página solo guarda los tokens de
+  la sesión de Supabase Auth.
+- La anon key va en la constante `ANON` de `app.js` y es pública a propósito.
+  Lo que no puede ir en el repo es nada que abra el libro: la contraseña, la
+  `service_role` key, ni el correo del dueño (el apéndice I lo adopta solo).
 - No agregues clasificación automática ni IA. El usuario elige la categoría.
 - No edites un apéndice ya aplicado; escribe el siguiente.
 - No uses emoji como viñeta de sección ni centres todo. Ese es justo el aspecto

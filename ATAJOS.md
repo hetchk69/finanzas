@@ -1,7 +1,9 @@
 # Atajo de iPhone — entradas y salidas
 
-> **Requiere el apéndice F aplicado** (`supabase/migrations/…apendice_f…`).
-> Antes de eso las cuentas nuevas no existen y las categorías no tienen emoji.
+> **Requiere los apéndices F e I aplicados** (`supabase/migrations/`).
+> Sin F, las cuentas nuevas no existen y las categorías no tienen emoji. Desde
+> el I, la anon key sola ya no abre nada: el atajo tiene que iniciar sesión con
+> tu correo y tu contraseña antes de cada registro.
 
 ## Por qué va a mano
 
@@ -15,22 +17,63 @@ Mándese al teléfono la anon key (Supabase → Settings → API → **anon publ
 esta URL base, que son lo único largo de teclear:
 
 ```
-https://dabvugwhzwkmdmsvrazz.supabase.co/rest/v1/rpc/
+https://dabvugwhzwkmdmsvrazz.supabase.co
 ```
 
-**Los tres encabezados** van en toda llamada. En *Obtener contenido de la URL*,
-método `POST`, sección *Encabezados*:
+Además van a hacer falta tu usuario y tu contraseña del libro. El atajo habla
+directo con Supabase, que no sabe de usuarios cortos: ahí el usuario va
+completo, seguido de `@hetchk69.github.io`.
+
+**Los tres encabezados** van en toda llamada a una función. En *Obtener
+contenido de la URL*, método `POST`, sección *Encabezados*:
 
 | Clave | Valor |
 |---|---|
 | `apikey` | *(la anon key)* |
-| `Authorization` | la palabra `Bearer`, **un espacio**, y la llave |
+| `Authorization` | la palabra `Bearer`, **un espacio**, y la variable `token` |
 | `Content-Type` | `application/json` |
 
-En `Authorization` no va ningún `+`: es `Bearer eyJhbGci…`, pegado con un espacio.
+`token` sale de las acciones 0a–0c de abajo. Antes del apéndice I aquí iba la
+anon key; ahora va el token de la sesión, y la anon key se queda solo en
+`apikey`. En `Authorization` no va ningún `+`: es `Bearer`, un espacio, y la
+variable insertada desde el botón de variables.
 
 Y en *Cuerpo de la solicitud* elija **JSON**, nunca «Formulario» — si queda en
 formulario, Supabase responde `Empty or invalid json`.
+
+### Acciones 0a–0c — iniciar sesión
+
+Van **al principio de todo**, antes de la primera pregunta. Así, si no hay señal
+o la contraseña cambió, el atajo falla antes de que usted escriba nada.
+
+**0a. Obtener contenido de la URL**
+
+- URL: `https://dabvugwhzwkmdmsvrazz.supabase.co/auth/v1/token?grant_type=password`
+- Método `POST`, cuerpo **JSON**, y solo **dos** encabezados:
+
+| Clave | Valor |
+|---|---|
+| `apikey` | *(la anon key)* |
+| `Content-Type` | `application/json` |
+
+| Clave del cuerpo | Tipo | Valor |
+|---|---|---|
+| `email` | Texto | *tu usuario*`@hetchk69.github.io`, en minúsculas |
+| `password` | Texto | *tu contraseña* |
+
+**0b. Obtener valor del diccionario** → clave `access_token`
+
+**0c. Definir variable** → nombre `token`
+
+Cuesta un viaje de red, medio segundo, antes de la primera pregunta. El token
+dura una hora, pero el atajo pide uno nuevo en cada corrida: guardarlo entre
+corridas exigiría un archivo en iCloud y lógica de vencimiento que no vale la
+pena por medio segundo.
+
+> **La contraseña queda escrita en el atajo**, en claro. Es el mismo lugar
+> donde antes estaba la anon key, y lo que la protege es lo mismo: el Face ID
+> del teléfono. Si algún día cambia la contraseña del libro, hay que cambiarla
+> aquí también — y en los otros atajos que tengan este bloque.
 
 ---
 
@@ -198,8 +241,8 @@ momento en que no conviene esperar; por eso no viene así por defecto.
 Preguntar «¿entrada o salida?» agrega **un toque a cada captura**, y las salidas
 son la enorme mayoría. Si en dos semanas le empieza a estorbar, la alternativa es
 partirlo en dos atajos — `Gasto` e `Ingreso` — cada uno sin esa primera pregunta.
-Se duplica este y se borra la rama que sobra en cada copia; los encabezados con la
-llave se conservan y no hay que volver a pegarlos.
+Se duplica este y se borra la rama que sobra en cada copia; el bloque 0a–0c y
+los encabezados se conservan y no hay que volver a armarlos.
 
 Dos atajos rápidos le ganan a uno lento. Pero empiece por el que pidió y decida
 con el uso, no de antemano.
@@ -219,10 +262,13 @@ con el uso, no de antemano.
 
 ## Los otros dos atajos
 
-**Deshacer** — dos acciones, y el que más va a agradecer:
+Los dos empiezan con el mismo bloque **0a–0c** para iniciar sesión. Lo más
+rápido es duplicar `Registrar` y borrar todo lo que viene después de 0c.
 
-1. *Obtener contenido de la URL* → `POST .../rpc/undo_last`, los tres encabezados,
-   **sin cuerpo**
+**Deshacer** — el que más va a agradecer:
+
+1. *Obtener contenido de la URL* → `POST .../rest/v1/rpc/undo_last`, los tres
+   encabezados, **sin cuerpo**
 2. *Mostrar notificación* → `Borrado: L [monto]`
 
 **Transferencia** — para pagar la tarjeta de crédito, que no es un gasto:
@@ -240,8 +286,12 @@ con el uso, no de antemano.
 |---|---|
 | `Categoría de gasto no encontrada` | El nombre no existe en la base. Con `v5` el emoji y las tildes ya no son el problema; revise que la categoría exista. |
 | `Cuenta no encontrada` | El texto no coincide con ninguna cuenta. Las cuentas son `Banco Atlántida`, `BAC Débito`, `BAC Crédito`, `Efectivo`. |
-| `401` / `JWT cryptographic operation failed` | El encabezado `Authorization` está mal armado. Es `Bearer`, un espacio, la llave. Sin `+`. |
+| `Invalid login credentials` en 0a | El usuario o la contraseña del cuerpo no coinciden. Revisa que `email` lleve el `@hetchk69.github.io` y vaya en minúsculas. |
+| `Email not confirmed` en 0a | Al crear el usuario faltó marcar «Auto Confirm User». Se confirma desde Authentication → Users. |
+| `401` / `JWT cryptographic operation failed` | El encabezado `Authorization` está mal armado. Es `Bearer`, un espacio, la variable `token`. Sin `+`. |
+| `401` con `No autorizado.` | En `Authorization` quedó la anon key en vez del token, o el bloque 0a–0c no está antes de la llamada. |
+| `401` con `Falta anotar al dueño` | El apéndice I no encontró exactamente un usuario cuando se corrió. Córralo otra vez en el SQL Editor. |
 | `Empty or invalid json` | El cuerpo quedó en «Formulario» en vez de JSON. |
-| Todo devuelve `404` | Falta la barra: es `/rest/v1/rpc/`, no `/rest/v1/rpc`. |
+| Todo devuelve `404` | La ruta de las funciones es `/rest/v1/rpc/` seguida del nombre; la de 0a es `/auth/v1/token?grant_type=password`. |
 | `disponible` sale vacío | Esa categoría no tiene presupuesto. Es correcto. |
 | Nada responde tras días sin usarlo | El proyecto se pausó por inactividad. Se reactiva desde el panel de Supabase. |

@@ -18,9 +18,11 @@ Porque en GitHub «privado» no compra privacidad aquí:
   al sitio de Pages es exclusivo de Enterprise Cloud. El repo privado solo
   escondería el código fuente, no la URL.
 
-Como el código no lleva ninguna anon key, esconderlo no protege nada. Lo que
-protege de verdad son los permisos de las funciones RPC — por eso importa aplicar
-el apéndice B.
+Esconder el código no protege nada: desde el apéndice I la anon key va escrita
+en `app.js` y no abre ninguna función. Lo que protege de verdad es que todo
+está otorgado a `authenticated` —quien inició sesión con tu correo y tu
+contraseña— y que el guardia de I solo deja pasar al usuario anotado como
+dueño.
 
 Si algún día quieres el sitio de verdad tras una puerta: **Cloudflare Pages +
 Cloudflare Access** da login por correo gratis hasta 50 usuarios. Es la única vía
@@ -35,8 +37,10 @@ gratuita a un sitio realmente privado.
 | `ATAJOS.md` | Hoja de armado de los atajos de iPhone |
 | `.nojekyll` | Que GitHub Pages sirva los archivos tal cual |
 
-**No hay ninguna anon key escrita en esta carpeta**, a propósito: así se puede
-publicar entera sin filtrar nada. La llave se pega una vez en cada dispositivo.
+**La anon key va escrita en `app.js`**, en la constante `ANON`, y es pública a
+propósito: desde el apéndice I solo sirve para tocar la puerta de Supabase Auth.
+Antes del I era la credencial completa, por eso hasta entonces no estaba en
+ningún archivo. El orden importa — ver «Entrar con usuario y contraseña».
 
 ---
 
@@ -216,16 +220,49 @@ sirviendo con lo que expone el script base.
 **Verificado en navegador**: registró un gasto de L 175.50 en Comida (notificación
 `quedan L 3,824.50`, saldo actualizado) y lo deshizo.
 
-### Primer arranque en un dispositivo
+### Entrar con usuario y contraseña
 
-La página arranca sin llave y la pide. Dos formas de dárselas:
+Se entra con usuario y contraseña de Supabase Auth. Supabase entra con correo,
+así que la página completa lo que se escribe sin `@` con `@hetchk69.github.io`,
+el dominio del propio sitio: nadie más puede recibir correo ahí. La sesión queda abierta en
+ese navegador y se renueva sola; no hay que volver a escribir nada hasta
+«Cerrar sesión», al pie de la página. La contraseña no se guarda en el
+navegador: solo los dos tokens de la sesión. Con el llavero de iCloud, el
+teléfono la ofrece guardar y después la rellena con Face ID.
 
-- **Enlace de alta**: abrir la URL con `#k=<anon key>` al final. La guarda y borra
-  el fragmento de la barra de direcciones en el acto. El fragmento (`#`) nunca
-  viaja al servidor, así que la llave no queda en ningún registro de acceso.
-- **A mano**: desplegar «Conexión» al final de la página y pegarla.
+**Puesta en marcha, una sola vez y en este orden:**
 
-Queda en el navegador de ese dispositivo. Para borrarla, vaciar los datos del sitio.
+1. **Crear tu usuario.** Panel de Supabase → Authentication → Users → Add user
+   → como correo, tu usuario seguido de `@hetchk69.github.io`, en minúsculas;
+   tu contraseña; y «Auto Confirm User» marcado. Al entrar escribes solo el
+   usuario. Como el dominio no recibe correo, sin la casilla marcada el
+   usuario quedaría esperando una confirmación que nunca llega.
+2. **Apagar el registro público.** En la configuración de Authentication,
+   desmarcar «Allow new users to sign up». Si queda prendido, cualquiera que
+   conozca la URL del proyecto puede crearse una cuenta.
+3. **Aplicar el apéndice I** en el SQL Editor. Tiene que avisar
+   `I1: 14 funciones pasaron de anon a authenticated` y `I2: dueño anotado`.
+   Si dice que no anotó dueño, revisa que exista exactamente un usuario y
+   córrelo otra vez.
+4. **Comprobar** que la anon key ya no abre nada: la llamada `curl` del final
+   del apéndice tiene que devolver `401`.
+5. **Recién ahí**, pegar la anon key en la constante `ANON` de `app.js` y
+   publicar.
+6. **Rehacer el atajo** del iPhone según ATAJOS.md: desde el paso 3 ya no anda.
+
+El paso 5 va después del 4 por una razón: publicar la llave antes de aplicar
+el I le regala el libro entero a quien abra ver-fuente.
+
+Mientras `ANON` esté vacía, la página usa la llave que cada dispositivo ya
+tenía pegada de antes, así que los dispositivos viejos siguen entrando entre
+el paso 3 y el 5. Un dispositivo nuevo, sin llave y con `ANON` vacía, lo dice
+en la pantalla de entrada.
+
+**Qué protege.** Sin tu contraseña, la URL y la anon key no sirven de nada.
+Tu usuario no está escrito en ningún archivo: el apéndice adopta como dueño al
+único usuario que exista. Lo que queda a la vista es el atajo del iPhone, que
+guarda la contraseña en claro para poder iniciar sesión solo — el mismo
+lugar donde antes vivía la anon key, detrás del Face ID del teléfono.
 
 ### Pantalla de inicio
 
