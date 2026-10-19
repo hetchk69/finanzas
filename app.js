@@ -462,6 +462,14 @@ function Graficos({ des, presupuestos, cargando, onRango, onAjustar }) {
   const porCuenta = Array.isArray(des.cuentas)
     ? plegar(des.cuentas.map((c) => ({ nombre: c.cuenta, monto: Number(c.total) })))
     : null;
+
+  /* Igual con el apéndice H y las entradas. Viene solo con las categorías
+     que tuvieron movimiento, así que una lista vacía significa que en este
+     rango no entró nada — no que falte la función. */
+  const entro = Number(des.totales.ingresos) || 0;
+  const porOrigen = Array.isArray(des.entradas) && des.entradas.length
+    ? plegar(des.entradas.map((c) => ({ nombre: c.categoria, monto: Number(c.total) })))
+    : null;
   const presets = [
     ["Este mes", mes(0)],
     ["Mes pasado", mes(-1)],
@@ -490,6 +498,11 @@ function Graficos({ des, presupuestos, cargando, onRango, onAjustar }) {
         <b><${Cifra} valor=${total} tam="gr" /></b>
         <span>en ${r.dias} ${r.dias === 1 ? "día" : "días"} · ${des.totales.movimientos} movimientos
               · promedio L ${L(total / Math.max(r.dias, 1))} por día</span>
+        ${entro > 0 ? html`
+          <span class="rango-entro">
+            entró <${Cifra} valor=${entro} tono="tinta" /> · neto
+            <${Cifra} valor=${entro - total} signo=${true} />
+          </span>` : null}
       </p>
 
       <div class="graficos">
@@ -515,6 +528,24 @@ function Graficos({ des, presupuestos, cargando, onRango, onAjustar }) {
           <${Tarjeta} titulo="Gasto por cuenta" nota=${`${r.desde} a ${r.hasta}`}>
             <${Dona} segmentos=${porCuenta} pie="gastado"
                      vacio="Sin gastos en este rango." />
+          <//>`}
+
+        ${porOrigen && html`
+          <${Tarjeta} titulo="De dónde entró" nota=${`${r.desde} a ${r.hasta}`}>
+            <${Dona} segmentos=${porOrigen} pie="entró"
+                     vacio="Sin entradas en este rango." />
+            <!-- La dona codifica magnitud, no identidad: sin esta lista sería
+                 un anillo sin forma de saber qué porción es cuál. En los gastos
+                 ese papel lo hace la sección «Por categoría» de más abajo. -->
+            <ul class="origen">
+              ${des.entradas.map((c) => html`
+                <li key=${c.categoria}>
+                  <${Marca} icono=${c.icono} color=${c.color} />
+                  <span class="origen-nombre">${c.categoria}</span>
+                  <span class="num">${L(c.total)}</span>
+                  <span class="origen-pct num">${entro ? pct((100 * Number(c.total)) / entro) : "—"}</span>
+                </li>`)}
+            </ul>
           <//>`}
       </div>
 
