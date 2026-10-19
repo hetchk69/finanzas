@@ -13,7 +13,7 @@ const URL_ = "https://dabvugwhzwkmdmsvrazz.supabase.co";
    credencial real es tu usuario y tu contraseña. Antes del I, publicarla le
    regala el libro entero a quien abra ver-fuente.
    Mientras esté vacía, se usa la que cada dispositivo ya tenía pegada. */
-const ANON = "";
+const ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRhYnZ1Z3doendrbWRtc3ZyYXp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk3ODQxOTUsImV4cCI6MjEwNTM2MDE5NX0.ZyjeYaM9bLcOQi10rs9m3LK7vephyzT4jfzz9aXJBwk";
 
 const ls = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch { return d; } };
 const lset = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
