@@ -545,7 +545,7 @@ function Graficos({ des, presupuestos, cargando, onRango, onAjustar }) {
 }
 
 /* ---------- captura ---------- */
-function Captura({ listas, onHecho, onError, refMonto }) {
+function Captura({ listas, saldos, onHecho, onError, refMonto }) {
   const [tipo, setTipo] = useState("gasto");
   const [monto, setMonto] = useState("");
   const [cat, setCat] = useState("");
@@ -557,11 +557,37 @@ function Captura({ listas, onHecho, onError, refMonto }) {
 
   const cats = tipo === "ingreso" ? listas.ingresos : listas.gastos;
 
+  /* `get_lists` solo devuelve nombres de cuenta; el tipo viene en los saldos
+     de `dashboard()`. */
+  const tipoDe = useMemo(() => {
+    const m = {};
+    (saldos || []).forEach((x) => { m[x.cuenta] = x.tipo; });
+    return m;
+  }, [(saldos || []).map((x) => `${x.cuenta}:${x.tipo}`).join("|")]);
+
+  /* Una tarjeta de crédito no recibe ingresos: meterle dinero es pagarla, y
+     eso es una transferencia, no una entrada. El atajo del teléfono ya la
+     excluye de su lista y lo deja dicho; esto hace que la web concuerde.
+     En transferencia sí aparece, porque pagar la tarjeta es exactamente eso. */
+  const cuentas = tipo === "ingreso"
+    ? listas.cuentas.filter((c) => tipoDe[c] !== "credito")
+    : listas.cuentas;
+
+  /* La cuenta preferida depende del tipo: un gasto sale del efectivo, pero una
+     quincena cae al banco. Antes la pestaña heredaba la cuenta del movimiento
+     anterior, así que pasar de Gasto a Ingreso dejaba "Efectivo" puesto y el
+     salario entero podía quedar registrado en la mano. */
+  useEffect(() => {
+    if (!cuentas.length) return;
+    const pref = tipo === "ingreso"
+      ? cuentas.find((c) => tipoDe[c] === "debito") || cuentas[0]
+      : cuentas.includes("Efectivo") ? "Efectivo" : cuentas[0];
+    setCuenta(pref);
+  }, [tipo, cuentas.join("|")]);
+
   useEffect(() => {
     if (!listas.cuentas.length) return;
-    const pref = listas.cuentas.includes("Efectivo") ? "Efectivo" : listas.cuentas[0];
-    setCuenta((c) => c || pref);
-    const otras = listas.cuentas.filter((c) => c !== pref);
+    const otras = listas.cuentas.filter((c) => c !== "Efectivo");
     setDestino((d) => d || (otras.includes("Ahorros") ? "Ahorros" : otras[0] || ""));
   }, [listas.cuentas.join("|")]);
 
@@ -614,18 +640,23 @@ function Captura({ listas, onHecho, onError, refMonto }) {
           </div>
         </label>
 
+        ${/* El `value` explícito en cada <option> no es decorativo: sin él Preact
+             deja el atributo en blanco, el <select> no encuentra con qué casar
+             su valor y se queda en selectedIndex -1. Se veía como un selector
+             vacío al cargar, y al enviar sin tocarlo viajaba categoría y cuenta
+             en blanco. */ ""}
         ${!esTrans && html`
           <label class="campo">
             <span>Categoría</span>
             <select value=${cat} onChange=${(e) => setCat(e.target.value)}>
-              ${cats.map((c) => html`<option key=${c}>${c}</option>`)}
+              ${cats.map((c) => html`<option key=${c} value=${c}>${c}</option>`)}
             </select>
           </label>`}
 
         <label class="campo">
           <span>${esTrans ? "Desde" : "Cuenta"}</span>
           <select value=${cuenta} onChange=${(e) => setCuenta(e.target.value)}>
-            ${listas.cuentas.map((c) => html`<option key=${c}>${c}</option>`)}
+            ${cuentas.map((c) => html`<option key=${c} value=${c}>${c}</option>`)}
           </select>
         </label>
 
@@ -633,7 +664,7 @@ function Captura({ listas, onHecho, onError, refMonto }) {
           <label class="campo">
             <span>Hacia</span>
             <select value=${destino} onChange=${(e) => setDestino(e.target.value)}>
-              ${listas.cuentas.map((c) => html`<option key=${c}>${c}</option>`)}
+              ${listas.cuentas.map((c) => html`<option key=${c} value=${c}>${c}</option>`)}
             </select>
           </label>`}
 
@@ -715,13 +746,13 @@ function Corregir({ mov, listas, onCerrar, onHecho, onError }) {
             <label class="campo">
               <span>Categoría</span>
               <select value=${cat} onChange=${(e) => setCat(e.target.value)}>
-                ${cats.map((c) => html`<option key=${c}>${c}</option>`)}
+                ${cats.map((c) => html`<option key=${c} value=${c}>${c}</option>`)}
               </select>
             </label>`}
           <label class="campo">
             <span>Cuenta</span>
             <select value=${cuenta} onChange=${(e) => setCuenta(e.target.value)}>
-              ${listas.cuentas.map((c) => html`<option key=${c}>${c}</option>`)}
+              ${listas.cuentas.map((c) => html`<option key=${c} value=${c}>${c}</option>`)}
             </select>
           </label>
           <label class="campo ancho">
@@ -995,7 +1026,7 @@ function App() {
 
           <section id="registrar">
             <${Regla} etiqueta="Registrar" />
-            <${Captura} listas=${listas} refMonto=${refMonto}
+            <${Captura} listas=${listas} saldos=${datos.saldos} refMonto=${refMonto}
                         onHecho=${tras} onError=${(m) => notificar(`Error: ${m}`)} />
             <button class="btn sutil" type="button" onClick=${deshacer}>Deshacer el último</button>
           </section>
