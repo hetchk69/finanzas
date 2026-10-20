@@ -192,27 +192,27 @@ las metas y el libro de asientos. Tocar un asiento lo abre para corregir o
 eliminar; tocar un sobre abre su límite. También registra gasto, ingreso y
 transferencia, y deshace el último.
 
-**Gráficos** — un rango de fechas (por defecto el mes calendario) y cuatro donas:
-gasto por categoría, presupuesto del ciclo usado contra disponible, cuánto del
-gasto cae en categorías vigiladas, y gasto por cuenta. Abajo, el desglose por
-categoría donde cada fila abre su límite.
+**Gráficos** — un rango de fechas (por defecto el mes calendario) y tres tarjetas
+de barras ordenadas de mayor a menor: gasto por categoría, gasto por cuenta y de
+dónde entró. Cada fila lleva el nombre, el monto y su parte del total; más de seis
+filas se pliegan en «Resto». Lo que tenga una sola fila va como frase.
 
-### Por qué las donas no usan el color de cada categoría
+### Por qué barras y no donas
 
-Se validó la paleta con herramienta en vez de a ojo. La de la base **falla**:
-Combustible y Transporte dan ΔE 11.3 en visión normal — por debajo de 15, difíciles
-de distinguir incluso sin daltonismo. Y no hay reemplazo: diez tonos categóricos
-mutuamente separables no existen; ni siete equiespaciados en el espacio perceptual
-lo logran.
+Hasta octubre de 2026 Gráficos eran cinco donas apiladas. Se cambiaron por tres
+razones: el ojo compara largos, no ángulos; la lista que decía qué porción era cuál
+quedaba cuatro tarjetas más abajo de su dona; y tres de las cinco repetían la misma
+cifra en el centro. La página quedó en poco más de la mitad del alto.
 
-Así que las donas **codifican magnitud, no identidad**: una rampa secuencial de un
-solo azul, de oscuro a claro según el monto, monótona por construcción (verificada,
-no supuesta). Va con el rango recortado a propósito: estirarla hasta el azul pálido
-deja el paso más claro en 1.35 de contraste sobre tarjeta blanca, o sea invisible.
-Debajo de los arcos hay una pista teñida para que los pasos claros tengan borde. La
-identidad la llevan la leyenda y las etiquetas, donde cada categoría sí conserva su
-color. El sobrante va tramado en vez de gris, porque un neutro de baja saturación
-siempre queda cerca de algún tono.
+Todas las barras van en un solo azul, porque es una sola serie y el largo ya dice
+cuánto. Antes se había validado con herramienta que diez colores categóricos
+distinguibles no existen (Combustible y Transporte daban ΔE 11.3, por debajo de
+15), y las donas usaban una rampa por monto; con barras ninguna de las dos cosas
+hace falta: la identidad la lleva el nombre en la fila.
+
+El presupuesto ya no aparece en Gráficos: vive en el ciclo, y mezclarlo con un
+rango de fechas ponía dos ventanas de tiempo en la misma pantalla. Su lugar es el
+Libro, donde los presupuestos van por urgencia y la barra se tiñe por estado.
 
 Si el apéndice B no está aplicado, **no se rompe**: lo detecta, avisa y sigue
 sirviendo con lo que expone el script base.

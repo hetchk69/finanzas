@@ -174,6 +174,21 @@ function folio(c) {
 const pct = (n) => `${nf0.format(Number(n || 0))}%`;
 const HOY = new Date().toLocaleDateString("en-CA");
 const MES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+const DIAS = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
+
+/* new Date("2026-10-17") lee la fecha en UTC y en Honduras cae el día
+   anterior; armándola por partes queda en la hora local. */
+const aFecha = (x) => { const [a, m, d] = String(x).split("-").map(Number); return new Date(a, m - 1, d); };
+const fechaCorta = (x) => { const f = aFecha(x); return `${f.getDate()} ${MES[f.getMonth()]}`; };
+const mesAnio = (x) => { const f = aFecha(x); return `${MESES[f.getMonth()]} ${f.getFullYear()}`; };
+function diaHumano(x) {
+  const f = aFecha(x), h = aFecha(HOY);
+  const dif = Math.round((h - f) / 864e5);
+  if (dif === 0) return "Hoy";
+  if (dif === 1) return "Ayer";
+  const anio = f.getFullYear() !== h.getFullYear() ? ` ${f.getFullYear()}` : "";
+  return `${DIAS[f.getDay()]} ${f.getDate()} ${MES[f.getMonth()]}${anio}`;
+}
 
 /* ============================================================
    Piezas
@@ -352,13 +367,31 @@ function AjustarSobre({ cat, onCerrar, onHecho, onError }) {
     </dialog>`;
 }
 
+/* "excedido", no "sobre": el elemento ya se llama .sobre y una clase de
+   estado con el mismo nombre colapsaría el selector. */
+function estadoSobre(b, ciclo) {
+  const p = Number(b.pct_usado) || 0;
+  const pCiclo = (100 * ciclo.dia_actual) / ciclo.dias_total;
+  return p > 100 ? "excedido" : p > pCiclo + 8 ? "adelantado" : "bien";
+}
+
+/* Lo que se está pasando va arriba: excedidos, después los que van
+   adelantados al calendario, y al final los que van bien; dentro de cada
+   grupo, el más gastado primero. En orden fijo, el único excedido podía
+   quedar tercero de cinco. */
+const URGENCIA = { excedido: 0, adelantado: 1, bien: 2 };
+const ordenarSobres = (lista, ciclo) => [...lista].sort((a, b) =>
+  URGENCIA[estadoSobre(a, ciclo)] - URGENCIA[estadoSobre(b, ciclo)]
+  || Number(b.pct_usado) - Number(a.pct_usado));
+
+/* El color de la barra dice el estado, no la categoría: con un tono de
+   azul distinto por categoría parecía que el tono codificaba algo, y no.
+   La identidad ya la lleva el emoji. */
 function Sobre({ b, ciclo, animar, onAjustar }) {
   const p = Number(b.pct_usado) || 0;
   const disp = Number(b.disponible);
   const pCiclo = (100 * ciclo.dia_actual) / ciclo.dias_total;
-  /* "excedido", no "sobre": el elemento ya se llama .sobre y una clase
-     de estado con el mismo nombre colapsaría el selector. */
-  const estado = p > 100 ? "excedido" : p > pCiclo + 8 ? "adelantado" : "bien";
+  const estado = estadoSobre(b, ciclo);
 
   return html`
     <li class=${`sobre ${estado}`}>
@@ -375,12 +408,12 @@ function Sobre({ b, ciclo, animar, onAjustar }) {
         </span>
       </div>
       <div class="barra">
-        <div class="barra-relleno" style=${`width:${animar ? Math.min(p, 100) : 0}%; --c:${b.color || "var(--accent)"}`}></div>
+        <div class="barra-relleno" style=${`width:${animar ? Math.min(p, 100) : 0}%`}></div>
         <i class="barra-ritmo" style=${`left:${Math.min(pCiclo, 100)}%`} title="ritmo del ciclo"></i>
       </div>
       <div class="sobre-pie">
         <span>${L(b.gastado)} de ${L(b.limite)}</span>
-        <span class="sobre-pct">${pct(p)}</span>
+        <span class="sobre-pct">${pct(p)}${estado === "adelantado" ? " · adelantado" : ""}</span>
       </div>
       </button>
     </li>`;
@@ -401,9 +434,15 @@ function Cinta({ serie, ciclo }) {
   const promedio = conGasto
     ? serie.reduce((a, d) => a + Number(d.gastos || 0), 0) / conGasto
     : 0;
+  /* Las barras no llevan escala, y sin una cifra no se sabe cuánto mide la
+     más alta. Se rotula solo esa —el extremo— y se resalta, en vez de
+     poner un número sobre cada día. */
+  const pico = max > 0 ? serie.find((d) => Number(d.gastos) === max) : null;
 
   return html`
     <div class="cinta">
+      ${pico && html`
+        <p class="cinta-cab">El día más caro: ${diaHumano(pico.dia).toLowerCase()}, <${Cifra} valor=${max} /></p>`}
       <div class="cinta-barras" role="img"
            aria-label=${`Gasto diario, máximo ${L(max)}.` +
                         (conEntrada ? ` ${conEntrada} ${conEntrada === 1 ? "día" : "días"} con entrada.` : "")}>
@@ -412,26 +451,26 @@ function Cinta({ serie, ciclo }) {
           const e = Number(d.ingresos) || 0;
           const h = g > 0 && max > 0 ? Math.max((100 * g) / max, 3) : 0;
           const hoy = d.dia === HOY;
+          const esPico = pico && d.dia === pico.dia;
           return html`
-            <div class=${`dia ${hoy ? "hoy" : ""} ${g > 0 ? "con" : ""}`} key=${d.dia}
-                 title=${`${d.dia}: L ${L(g)}` + (e ? ` · entró L ${L(e)}` : "")}>
+            <div class=${`dia ${hoy ? "hoy" : ""} ${g > 0 ? "con" : ""} ${esPico ? "pico" : ""}`} key=${d.dia}
+                 title=${`${diaHumano(d.dia)}: L ${L(g)}` + (e ? ` · entró L ${L(e)}` : "")}>
               ${e > 0 ? html`<span class="dia-entrada" aria-hidden="true"></span>` : null}
               <div class="dia-barra" style=${`height:${h}%`}></div>
             </div>`;
         })}
       </div>
       <div class="cinta-pie">
-        <span>${ciclo.desde.slice(8)}/${ciclo.desde.slice(5, 7)}</span>
+        <span>${fechaCorta(ciclo.desde)}</span>
         <span class="cinta-prom">
           ${conGasto ? `promedio L ${L(promedio)} por día con gasto` : "sin gastos todavía"}
         </span>
-        <span>${ciclo.hasta.slice(8)}/${ciclo.hasta.slice(5, 7)}</span>
+        <span>${fechaCorta(ciclo.hasta)}</span>
       </div>
     </div>`;
 }
 
 function Asiento({ m, onAbrir }) {
-  const [, mm, dd] = String(m.fecha).split("-");
   const titulo = m.tipo === "transferencia"
     ? "Transferencia"
     : `${m.icono ? m.icono + " " : ""}${m.categoria || "—"}`;
@@ -441,9 +480,8 @@ function Asiento({ m, onAbrir }) {
   const extra = [m.nota, m.recurrente ? "recurrente" : null].filter(Boolean).join(" · ");
 
   return html`
-    <li>
+    <li class="fila">
       <button class="asiento" type="button" onClick=${() => onAbrir(m)}>
-        <span class="asiento-fecha"><b>${Number(dd)}</b>${MES[Number(mm) - 1]}</span>
         <span class="asiento-glosa">
           <b>${titulo}</b>
           <small>${det}${extra ? ` · ${extra}` : ""}</small>
@@ -453,6 +491,30 @@ function Asiento({ m, onAbrir }) {
         </span>
       </button>
     </li>`;
+}
+
+/* Un libro diario se lee por día. Los movimientos ya vienen del más
+   nuevo al más viejo, así que basta con cortar donde cambia la fecha. */
+function agruparPorDia(movs) {
+  const grupos = [];
+  for (const m of movs) {
+    const g = grupos[grupos.length - 1];
+    if (g && g.fecha === m.fecha) g.items.push(m);
+    else grupos.push({ fecha: m.fecha, items: [m] });
+  }
+  return grupos;
+}
+
+/* Lo que una meta tiene que contestar es cuánto falta y a qué ritmo. Antes
+   mostraba lo ahorrado y una fecha ISO, y el objetivo ni aparecía, aunque
+   v_metas lo manda desde el apéndice B. */
+function metaPie(m) {
+  if (m.falta != null && Number(m.falta) <= 0) return "completa";
+  const partes = [];
+  if (m.falta != null) partes.push(`faltan L ${L(m.falta)}`);
+  if (m.fecha_objetivo) partes.push(`para ${mesAnio(m.fecha_objetivo)}`);
+  if (m.cuota_mensual != null) partes.push(`L ${L(m.cuota_mensual)}/mes`);
+  return partes.join(" · ") || "sin fecha";
 }
 
 function Esqueleto({ filas = 3 }) {
@@ -476,76 +538,50 @@ function ultimosDias(n) {
   return { desde: iso(d), hasta: iso(h) };
 }
 
-/* La dona codifica MAGNITUD, no identidad: una rampa secuencial de un solo
-   tono, de oscuro a claro según el monto. Es la codificación correcta para
-   magnitud, es monótona por construcción y no tiene el problema de
-   distinguir diez matices. La identidad la llevan la leyenda y las
-   etiquetas, donde cada categoría conserva su color propio. */
-const RAMPA = 6;
-
-/* Pliega la cola en "Resto": más allá de seis porciones la dona deja de
-   leerse, y ningún juego de tonos separa tantas categorías. */
-function plegar(items, n = RAMPA) {
+/* Más de seis filas ya no se comparan de un vistazo: la cola se pliega en
+   «Resto», que va al final aunque sume más que alguna de arriba. Si la cola
+   es de una sola fila, va con su nombre: «Resto (1)» no le dice nada a nadie. */
+const TOPE = 6;
+function plegar(items, n = TOPE) {
   const vivos = items
     .filter((i) => Number(i.monto) > 0)
     .sort((a, b) => Number(b.monto) - Number(a.monto));
   const cola = vivos.slice(n);
+  if (cola.length < 2) return vivos;
   const suma = cola.reduce((a, i) => a + Number(i.monto), 0);
-  return suma > 0
-    ? [...vivos.slice(0, n), { nombre: `Resto (${cola.length})`, monto: suma, resto: true }]
-    : vivos;
+  return [...vivos.slice(0, n), { nombre: `Resto (${cola.length})`, monto: suma, resto: true }];
 }
 
-function Dona({ segmentos, etiqueta, pie, vacio = "Sin datos en este rango." }) {
-  const total = segmentos.reduce((a, s) => a + Number(s.monto), 0);
-  if (!total) return html`<p class="vacio">${vacio}</p>`;
-
-  const R = 68, GROSOR = 26, CIRC = 2 * Math.PI * R, HUECO = 3;
-  let acumulado = 0;
-  const arcos = segmentos.map((s, i) => {
-    const frac = Number(s.monto) / total;
-    const largo = Math.max(CIRC * frac - HUECO, 0.8);
-    const trazo = s.resto ? "url(#tramado)" : s.color || `var(--d${Math.min(i + 1, RAMPA)})`;
-    const arco = html`
-      <circle key=${s.nombre} cx="100" cy="100" r=${R} fill="none"
-              stroke=${trazo} stroke-width=${GROSOR}
-              stroke-dasharray=${`${largo} ${CIRC - largo}`}
-              stroke-dashoffset=${-acumulado}>
-        <title>${s.nombre}: L ${L(s.monto)} · ${pct((100 * s.monto) / total)}</title>
-      </circle>`;
-    acumulado += CIRC * frac;
-    return arco;
-  });
-
-  const mayor = segmentos.reduce((a, s) => (Number(s.monto) > Number(a.monto) ? s : a));
+/* Barras horizontales ordenadas, no donas. El ojo compara largos, no
+   ángulos, y el nombre con su monto en la misma fila hace de leyenda: ya no
+   hay porción que no se sepa qué es. Una sola serie va en un solo color —el
+   largo ya dice cuánto, y teñir por monto repetía el dato—. Con una sola fila
+   no hay nada que comparar, y una barra entera para decir «todo» es un
+   gráfico de adorno: va como frase. */
+function Barras({ items, total, frase = "Todo en", vacio }) {
+  if (!items.length) return vacio ? html`<p class="vacio">${vacio}</p>` : null;
+  if (items.length === 1) {
+    const [i] = items;
+    return html`
+      <p class="barras-uno">${frase} ${i.icono ? `${i.icono} ` : ""}<b>${i.nombre}</b>: <${Cifra} valor=${i.monto} /></p>`;
+  }
+  const max = Math.max(...items.map((i) => Number(i.monto)));
   return html`
-    <div class="dona">
-      <svg viewBox="0 0 200 200" role="img"
-           aria-label=${`${pie}. Total L ${L(total)}. Mayor: ${mayor.nombre}, ${pct((100 * mayor.monto) / total)}`}>
-        <g transform="rotate(-90 100 100)">
-          <!-- Pista teñida: los pasos claros de la rampa apenas contrastan
-               contra blanco, y sobre esta pista sí quedan definidos. -->
-          <circle cx="100" cy="100" r=${R} fill="none" stroke="var(--hundido)" stroke-width=${GROSOR}></circle>
-          ${arcos}
-        </g>
-        <text x="100" y="94" text-anchor="middle" class="dona-cifra">L ${nf0.format(etiqueta ?? total)}</text>
-        <text x="100" y="112" text-anchor="middle" class="dona-pie">${pie}</text>
-      </svg>
-    </div>`;
-}
-
-/* Una sola definición del tramado para toda la página: los id de SVG son
-   globales del documento y repetirlos en cada dona los duplica. */
-function DefsSVG() {
-  return html`
-    <svg width="0" height="0" aria-hidden="true" style="position:absolute">
-      <defs>
-        <pattern id="tramado" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-          <rect width="7" height="7" fill="var(--hundido)"></rect>
-          <line x1="0" y1="0" x2="0" y2="7" stroke="var(--ink3)" stroke-width="2.5"></line>
-        </pattern>
-      </defs>
-    </svg>`;
+    <ul class="barras">
+      ${items.map((i) => {
+        const v = Number(i.monto);
+        const parte = total ? pct((100 * v) / total) : "—";
+        return html`
+          <li key=${i.nombre} class=${i.resto ? "resto" : ""} title=${`${i.nombre}: L ${L(v)} · ${parte} del total`}>
+            <span class="barras-nombre">
+              ${i.icono ? html`<i class="marca" aria-hidden="true">${i.icono}</i>` : null}${i.nombre}
+            </span>
+            <${Cifra} valor=${v} />
+            <span class="barras-pista"><span class="barras-relleno" style=${`width:${(100 * v) / max}%`}></span></span>
+            <span class="barras-parte">${parte}</span>
+          </li>`;
+      })}
+    </ul>`;
 }
 
 function Tarjeta({ titulo, nota, children }) {
@@ -559,38 +595,33 @@ function Tarjeta({ titulo, nota, children }) {
     </figure>`;
 }
 
-function Graficos({ des, presupuestos, cargando, onRango, onAjustar }) {
+/* Gráficos contesta adónde se fue la plata en el rango elegido. El
+   presupuesto vive en el ciclo, no en el rango: mezclarlo aquí ponía dos
+   ventanas de tiempo en la misma pantalla, y ya tiene su lugar en el Libro. */
+function Graficos({ des, cargando, onRango }) {
   if (!des) return html`<${Esqueleto} filas=${2} />`;
+  /* Cada pieza degrada sola: un desglose sin totales o sin rango avisa, en
+     vez de tumbar la pantalla con un error de JavaScript. */
+  if (!des.totales || !des.rango || !Array.isArray(des.categorias)) {
+    return html`<p class="alerta"><b>El desglose vino incompleto.</b>
+      Revisa que el apéndice H esté aplicado.</p>`;
+  }
   const total = Number(des.totales.gastos) || 0;
   const r = des.rango;
 
-  const porCategoria = plegar(
-    des.categorias.map((c) => ({ nombre: c.categoria, monto: Number(c.total) }))
-  );
+  const porCategoria = plegar(des.categorias.map((c) =>
+    ({ nombre: c.categoria, icono: c.icono, monto: Number(c.total) })));
+  const sinGasto = des.categorias.filter((c) => !(Number(c.total) > 0)).map((c) => c.categoria);
 
-  /* El presupuesto vive en el ciclo, no en el rango elegido: se rotula
-     así para no mezclar dos ventanas de tiempo en la misma pantalla. */
-  const limTotal = presupuestos.reduce((a, b) => a + Number(b.limite), 0);
-  const usado = presupuestos.reduce((a, b) => a + Number(b.gastado), 0);
-  const excedido = usado > limTotal;
-  const segPresupuesto = limTotal
-    ? [
-        { nombre: "Gastado", monto: Math.min(usado, limTotal),
-          color: excedido ? "var(--over)" : "var(--d2)" },
-        { nombre: "Disponible", monto: Math.max(limTotal - usado, 0), color: "var(--d6)" },
-      ]
-    : [];
-
-  const conLim = des.categorias.filter((c) => c.limite != null)
-                               .reduce((a, c) => a + Number(c.total), 0);
+  /* Lo que antes era una dona entera para decir «todo»: cuánto del gasto
+     cayó donde ningún límite avisa. Es una cifra, así que va como nota. */
   const sinLim = des.categorias.filter((c) => c.limite == null)
                                .reduce((a, c) => a + Number(c.total), 0);
-  const segVigilado = [
-    { nombre: "Con límite", monto: conLim, color: "var(--d2)" },
-    { nombre: "Sin límite", monto: sinLim, resto: true },
-  ];
+  const notaLimite = !total ? null
+    : sinLim > 0 ? `L ${L(sinLim)} en categorías sin límite`
+    : "todo en categorías con límite";
 
-  /* Solo si se aplicó el apéndice D; si no, esta dona simplemente no está. */
+  /* Solo si se aplicó el apéndice D; si no, esta tarjeta simplemente no está. */
   const porCuenta = Array.isArray(des.cuentas)
     ? plegar(des.cuentas.map((c) => ({ nombre: c.cuenta, monto: Number(c.total) })))
     : null;
@@ -600,8 +631,9 @@ function Graficos({ des, presupuestos, cargando, onRango, onAjustar }) {
      rango no entró nada — no que falte la función. */
   const entro = Number(des.totales.ingresos) || 0;
   const porOrigen = Array.isArray(des.entradas) && des.entradas.length
-    ? plegar(des.entradas.map((c) => ({ nombre: c.categoria, monto: Number(c.total) })))
+    ? plegar(des.entradas.map((c) => ({ nombre: c.categoria, icono: c.icono, monto: Number(c.total) })))
     : null;
+
   const presets = [
     ["Este mes", mes(0)],
     ["Mes pasado", mes(-1)],
@@ -638,72 +670,24 @@ function Graficos({ des, presupuestos, cargando, onRango, onAjustar }) {
       </p>
 
       <div class="graficos">
-        <${Tarjeta} titulo="Gasto por categoría" nota=${`${r.desde} a ${r.hasta}`}>
-          <${Dona} segmentos=${porCategoria} pie="gastado"
-                   vacio="Sin gastos en este rango. Registra uno y aparece aquí." />
-        <//>
-
-        <${Tarjeta} titulo="Presupuesto del ciclo"
-                    nota=${excedido ? "excedido" : `de L ${L(limTotal)}`}>
-          <${Dona} segmentos=${segPresupuesto} etiqueta=${Math.max(limTotal - usado, 0)}
-                   pie="disponible"
-                   vacio="Ninguna categoría tiene límite." />
-        <//>
-
-        <${Tarjeta} titulo="¿Cuánto se está vigilando?"
-                    nota="gasto en categorías con límite">
-          <${Dona} segmentos=${segVigilado} pie="gastado"
-                   vacio="Sin gastos en este rango." />
+        <${Tarjeta} titulo="Gasto por categoría" nota=${notaLimite}>
+          <${Barras} items=${porCategoria} total=${total} frase="Todo fue a"
+                     vacio="Sin gastos en este rango. Registra uno y aparece aquí." />
+          ${total > 0 && sinGasto.length ? html`
+            <p class="barras-cero">Sin gasto: ${sinGasto.join(", ")}.</p>` : null}
         <//>
 
         ${porCuenta && html`
-          <${Tarjeta} titulo="Gasto por cuenta" nota=${`${r.desde} a ${r.hasta}`}>
-            <${Dona} segmentos=${porCuenta} pie="gastado"
-                     vacio="Sin gastos en este rango." />
+          <${Tarjeta} titulo="Gasto por cuenta">
+            <${Barras} items=${porCuenta} total=${total} frase="Todo salió de"
+                       vacio="Sin gastos en este rango." />
           <//>`}
 
         ${porOrigen && html`
-          <${Tarjeta} titulo="De dónde entró" nota=${`${r.desde} a ${r.hasta}`}>
-            <${Dona} segmentos=${porOrigen} pie="entró"
-                     vacio="Sin entradas en este rango." />
-            <!-- La dona codifica magnitud, no identidad: sin esta lista sería
-                 un anillo sin forma de saber qué porción es cuál. En los gastos
-                 ese papel lo hace la sección «Por categoría» de más abajo. -->
-            <ul class="origen">
-              ${des.entradas.map((c) => html`
-                <li key=${c.categoria}>
-                  <${Marca} icono=${c.icono} color=${c.color} />
-                  <span class="origen-nombre">${c.categoria}</span>
-                  <span class="num">${L(c.total)}</span>
-                  <span class="origen-pct num">${entro ? pct((100 * Number(c.total)) / entro) : "—"}</span>
-                </li>`)}
-            </ul>
+          <${Tarjeta} titulo="De dónde entró">
+            <${Barras} items=${porOrigen} total=${entro} frase="Todo entró por" />
           <//>`}
       </div>
-
-      <${Regla} etiqueta="Por categoría">toca para ajustar el límite<//>
-      <div class="pliego"><ul class="leyenda">
-        ${des.categorias.map((c) => {
-          const t = Number(c.total);
-          const p = total ? (100 * t) / total : 0;
-          const lim = c.limite == null ? null : Number(c.limite);
-          return html`
-            <li key=${c.categoria} class=${t > 0 ? "" : "cero"}>
-              <button type="button"
-                      aria-label=${`Ajustar el límite de ${c.categoria}`}
-                      onClick=${() => onAjustar({ categoria: c.categoria, limite: c.limite, gastado: c.total })}>
-                <${Marca} icono=${c.icono} color=${c.color} />
-                <span class="leyenda-nombre">${c.categoria}</span>
-                <span class="leyenda-lim">
-                  ${lim == null ? "sin límite" : `de ${L(lim)}`}
-                  ${lim != null && t > lim ? html`<b class="exceso">excedido</b>` : null}
-                </span>
-                <span class="leyenda-monto num">${L(t)}</span>
-                <span class="leyenda-pct num">${total ? pct(p) : "—"}</span>
-              </button>
-            </li>`;
-        })}
-      </ul></div>
     </div>`;
 }
 
@@ -1104,7 +1088,6 @@ function App() {
 
   return html`
     <div class="hoja-libro">
-      <${DefsSVG} />
       <header class="cabecera">
         <div>
           <h1>Libro de Lempiras</h1>
@@ -1125,8 +1108,7 @@ function App() {
         <b>Falta aplicar el apéndice B.</b> Sin él no hay asientos, metas ni gasto diario.</p>`}
 
       ${vista === "graficos" && (v3
-        ? html`<${Graficos} des=${des} presupuestos=${datos ? datos.presupuestos : []}
-                            cargando=${cargandoDes} onRango=${setRango} onAjustar=${setAjustando} />`
+        ? html`<${Graficos} des=${des} cargando=${cargandoDes} onRango=${setRango} />`
         : html`<p class="alerta"><b>Falta aplicar el apéndice C.</b>
             Los gráficos por rango necesitan la función <code>desglose()</code>.</p>`)}
 
@@ -1149,7 +1131,7 @@ function App() {
             <//>
             ${datos.presupuestos.length
               ? html`<div class="pliego"><ul class="sobres">
-                  ${datos.presupuestos.map((b) => html`
+                  ${ordenarSobres(datos.presupuestos, c).map((b) => html`
                     <${Sobre} key=${b.categoria} b=${b} ciclo=${c} animar=${animar} onAjustar=${setAjustando} />`)}
                 </ul></div>`
               : html`<p class="vacio">Ninguna categoría tiene límite todavía.</p>`}
@@ -1184,8 +1166,7 @@ function App() {
           <div class="col col-b">
           <section>
             <${Regla} etiqueta="Cuentas">
-              ${(() => { const t = datos.saldos.reduce((a, s) => a + Number(s.saldo), 0);
-                         return html`total <${Cifra} valor=${t} />`; })()}
+              ${datos.saldos.length === 1 ? "1 cuenta" : `${datos.saldos.length} cuentas`}
             <//>
             <div class="pliego"><ul class="cuentas">
               ${datos.saldos.map((s) => html`
@@ -1194,6 +1175,12 @@ function App() {
                     ? null : html`<small>${s.tipo}</small>`}</span>
                   <${Cifra} valor=${s.saldo} />
                 </li>`)}
+              <!-- La fila de cierre del libro: el total de todas las cuentas es de
+                   los datos que más importan, y estaba en letra de 11px en un rincón. -->
+              <li class="cierre">
+                <span>Total</span>
+                <${Cifra} valor=${datos.saldos.reduce((a, s) => a + Number(s.saldo), 0)} tam="md" />
+              </li>
             </ul></div>
           </section>
 
@@ -1205,15 +1192,13 @@ function App() {
                   <li class="sobre estatico" key=${m.meta}>
                     <div class="sobre-cab">
                       <span class="sobre-nombre">${m.meta}</span>
-                      <span class="sobre-restante"><${Cifra} valor=${m.ahorrado} /></span>
+                      <span class="sobre-restante"><${Cifra} valor=${m.ahorrado} />${m.objetivo != null ? html`<span class="meta-de"> de ${L(m.objetivo)}</span>` : null}</span>
                     </div>
                     <div class="barra">
                       <div class="barra-relleno meta" style=${`width:${animar ? Math.min(Number(m.pct), 100) : 0}%`}></div>
                     </div>
                     <div class="sobre-pie">
-                      <span>${[m.fecha_objetivo && `para ${m.fecha_objetivo}`,
-                                m.cuota_mensual != null && `L ${L(m.cuota_mensual)}/mes`]
-                                .filter(Boolean).join(" · ") || "sin fecha"}</span>
+                      <span>${metaPie(m)}</span>
                       <span class="sobre-pct">${pct(m.pct)}</span>
                     </div>
                   </li>`)}
@@ -1225,7 +1210,19 @@ function App() {
               <${Regla} etiqueta="Asientos">toca uno para corregirlo<//>
               ${datos.movimientos.length
                 ? html`<div class="pliego"><ul class="asientos">
-                    ${datos.movimientos.map((m) => html`<${Asiento} key=${m.id} m=${m} onAbrir=${setEditando} />`)}
+                    ${agruparPorDia(datos.movimientos).map((g) => {
+                      const suma = (tipo) => g.items.filter((m) => m.tipo === tipo)
+                                                    .reduce((a, m) => a + Number(m.monto), 0);
+                      const salio = suma("gasto"), entro = suma("ingreso");
+                      return [
+                        html`<li class="dia-cab" key=${`d${g.fecha}`}>
+                          <span>${diaHumano(g.fecha)}</span>
+                          ${salio > 0 ? html`<span class="dia-salio">salió L ${L(salio)}</span>`
+                            : entro > 0 ? html`<span class="dia-salio">entró L ${L(entro)}</span>` : null}
+                        </li>`,
+                        ...g.items.map((m) => html`<${Asiento} key=${m.id} m=${m} onAbrir=${setEditando} />`),
+                      ];
+                    })}
                   </ul></div>`
                 : html`<p class="vacio">El libro está en blanco. Registra el primer movimiento abajo.</p>`}
             </section>`}

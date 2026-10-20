@@ -41,19 +41,28 @@ para nada más. Si todo puede ponerse rojo, el rojo deja de avisar.
 `font-variant-numeric:tabular-nums` en cualquier columna de números — si no
 alinean, el ojo no puede comparar. Manrope es proporcional: sin `tabular-nums`
 los montos de una lista no quedan uno debajo del otro. La excepción es la cifra
-que va sola, sin columna (la grande del medidor, el total de la dona): ahí van
+que va sola, sin columna (la grande del medidor, el total de Gráficos): ahí van
 cifras proporcionales, porque con las tabulares los «1» quedan con hueco. Hasta
 octubre de 2026 las cifras iban en JetBrains Mono, y se cambió porque parecían
 una terminal. El signo de lempira va subordinado al número: más chico, en
 `--ink3`, nunca del tamaño de la cifra.
 
-**Las listas son pliegos.** Presupuestos, cuentas, metas, asientos y la leyenda
-por categoría van dentro de `.pliego`: una hoja blanca con su borde y su sombra
+**Las listas son pliegos.** Presupuestos, cuentas, metas y asientos van
+dentro de `.pliego`: una hoja blanca con su borde y su sombra
 corta, puesta sobre un fondo `--hundido` con margen de papel alrededor.
 Renglones alternos (`li:nth-child(odd)`) y separación punteada. La banda va en
 la fila, no en el botón interior: si va en el botón, termina donde termina su
 relleno y deja un filo blanco contra el canto de la hoja. Sobre una fila ya
 teñida, el hover tiene que bajar a `--hundido` para verse.
+
+**Cada lista se lee como en el papel.** Los asientos van por día, con
+encabezados «Hoy», «Ayer», «sáb 17 oct» y lo que salió ese día; la banda alterna
+cuenta solo los asientos (`:nth-child(odd of .fila)`), no los encabezados. Las
+cuentas cierran con una fila de total bajo doble raya, porque es de los datos
+que más importan. Los presupuestos van por urgencia —excedidos, adelantados al
+calendario, los que van bien— y el color de su barra dice ese estado, no la
+categoría: azul `--accent`, ámbar `--warn` con la palabra «adelantado», rojo
+`--over` con «excedido». Una meta dice cuánto falta, no solo cuánto hay.
 
 **Usa la tarjeta con criterio.** Borde, relleno, radio y sombra marcan un
 elemento como objeto aparte. Aplicarlos a todo aplana la jerarquía. Hoy el
@@ -62,24 +71,33 @@ resto vive sobre el papel.
 
 ## Las gráficas
 
-**Las donas codifican magnitud, no identidad.** Una rampa secuencial de un solo
-azul (`--d1`…`--d6`), de oscuro a claro según el monto, verificada monótona. El
-rango va recortado a propósito: estirarla hasta el azul pálido deja el paso más
-claro en 1.35 de contraste sobre tarjeta blanca.
+**Barras horizontales ordenadas, no donas.** Hasta octubre de 2026 Gráficos eran
+cinco donas apiladas; se cambiaron porque el ojo compara largos y no ángulos,
+porque la lista que decía qué porción era cuál quedaba cuatro tarjetas más
+abajo, y porque tres repetían la misma cifra en el centro. Cada fila lleva el
+nombre con su emoji, el monto y, debajo, la barra con su parte del total: la
+fila misma hace de leyenda.
 
-Esto no es capricho. Se validó la paleta categórica con herramienta: Combustible
-y Transporte dan ΔE 11.3 en visión normal, por debajo de 15. Diez tonos
-mutuamente separables no existen; ni siete equiespaciados lo logran.
+**Una sola serie, un solo color.** Todas las barras van en `--accent`; el largo
+ya dice cuánto. La rampa por monto que usaban las donas teñía categorías sin
+orden según su tamaño, y repetía el dato que el largo ya daba. La cola pasa de
+seis filas a «Resto (n)», al final y en tinta apagada; si la cola es de una sola
+fila, va con su nombre.
 
-**Por eso toda dona necesita su lista.** La identidad la llevan la leyenda y las
-etiquetas, donde cada categoría sí conserva su color y su emoji. Una dona sin
-lista es un anillo bonito sin forma de saber qué porción es cuál. El sobrante va
-tramado, no gris: un neutro de baja saturación siempre queda cerca de algún tono.
+**Un gráfico de una sola porción es un número.** Con una sola fila no hay nada
+que comparar: va como frase («Todo entró por 💼 Salario: L 29,000.00»). Lo que
+antes era una dona entera para decir «todo en categorías con límite» ahora es la
+nota de la tarjeta.
+
+**Gráficos no mezcla ventanas de tiempo.** Contesta adónde se fue la plata en el
+rango elegido. El presupuesto vive en el ciclo y tiene su lugar en el Libro; por
+eso Gráficos no muestra límites ni porcentajes contra el límite.
 
 **Dos series con órdenes de magnitud distintos no comparten escala.** Un salario
 de cinco cifras junto a almuerzos de doscientos deja las barras de gasto pegadas
 al suelo. Por eso la cinta diaria marca las entradas con un triángulo —presencia,
-no magnitud— y la magnitud la lleva el balance de arriba.
+no magnitud— y la magnitud la lleva el balance de arriba. La cinta no tiene eje:
+rotula solo el día más caro, y lo resalta.
 
 ## La pantalla
 
@@ -111,7 +129,7 @@ redondea.
 
 **Las transferencias no son ni entrada ni salida.** Mueven saldo entre cuentas
 propias. No entran en el balance del ciclo, ni en el gasto por categoría, ni en
-las donas.
+las barras de Gráficos.
 
 **Cada pieza degrada sola.** Si el apéndice que la alimenta no está aplicado, la
 sección no se dibuja y el resto sigue sirviendo. Nunca una pantalla en blanco

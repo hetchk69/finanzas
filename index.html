@@ -29,11 +29,6 @@
   --rule:#DCE5F0;  --ink:#141C28;  --ink2:#54627A; --ink3:#64748B;
   --accent:#2E5E9E; --over:#B33A2B; --warn:#8A6412;
   --on-accent:#FFFFFF;
-  /* Rampa secuencial de la dona: un solo tono, luminosidad creciente
-     (verificada monotona). El rango va recortado a proposito: estirarla
-     hasta el azul palido deja el paso mas claro en 1.35 de contraste
-     sobre tarjeta blanca, practicamente invisible. */
-  --d1:#1F4C89; --d2:#2F6299; --d3:#4177AC; --d4:#548CBE; --d5:#69A1CF; --d6:#83B7DF;
   --sombra:0 1px 0 var(--rule), 0 10px 30px -22px rgba(20,28,40,.45);
   color-scheme:light;
 }
@@ -140,15 +135,19 @@ section{margin-top:30px}
 /* line-height:1 evita que el emoji estire la fila; width fija alinea las
    columnas aunque los emoji midan distinto. */
 .marca{font-style:normal; font-size:15px; line-height:1; width:20px; flex:none; text-align:center}
-.leyenda .marca{font-size:16px}
 .sobre-restante{font-size:12px; color:var(--ink2); white-space:nowrap}
 .barra{position:relative; height:8px; margin-top:10px; background:var(--hundido); border-radius:2px}
 .barra-relleno{
-  position:absolute; inset:0 auto 0 0; background:var(--c); border-radius:2px;
+  position:absolute; inset:0 auto 0 0; background:var(--accent); border-radius:2px;
   transition:width .7s cubic-bezier(.22,.8,.3,1);
 }
 .barra-relleno.meta{background:var(--accent)}
 .sobre.excedido .barra-relleno{background:var(--over)}
+/* Adelantado al calendario: ámbar, y siempre con la palabra al lado. El
+   rojo queda para el excedido, que es el único que ya se pasó. */
+.sobre.adelantado .barra-relleno{background:var(--warn)}
+.sobre.adelantado .sobre-pct{color:var(--warn)}
+.meta-de{font:400 11.5px Manrope, Archivo, sans-serif; font-variant-numeric:tabular-nums; color:var(--ink3)}
 .barra-ritmo{position:absolute; top:-3px; bottom:-3px; width:1.5px; background:var(--ink2); opacity:.55}
 .sobre-pie{
   display:flex; justify-content:space-between; margin-top:7px;
@@ -177,7 +176,6 @@ section{margin-top:30px}
 .grafico figcaption{display:flex; flex-direction:column; gap:3px}
 .grafico figcaption b{font-size:14px; font-weight:600; letter-spacing:-.01em}
 .grafico figcaption span{font:400 11px Manrope, Archivo, sans-serif; font-variant-numeric:tabular-nums; color:var(--ink3)}
-.grafico .dona{margin:8px auto 0; max-width:208px}
 .grafico .vacio{padding:34px 0; text-align:center; font-size:13px}
 
 /* ---- desglose por rango ---- */
@@ -191,7 +189,7 @@ section{margin-top:30px}
 .rangos button.sel{background:var(--accent); border-color:var(--accent); color:var(--on-accent)}
 .rango-fechas{display:flex; gap:10px}
 .rango-fechas label{flex:1; min-width:0}
-.rango-fechas span{display:block; margin-bottom:5px; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink3)}
+.rango-fechas span{display:block; margin-bottom:5px; font-size:12.5px; color:var(--ink3)}
 .rango-fechas input{
   width:100%; padding:8px 10px; border:1px solid var(--rule); border-radius:3px;
   background:var(--card); color:var(--ink); font:400 13px Manrope, Archivo, sans-serif; font-variant-numeric:tabular-nums;
@@ -201,43 +199,32 @@ section{margin-top:30px}
 /* La línea de entradas solo aparece cuando entró algo en el rango. */
 .rango-entro{display:flex; align-items:baseline; flex-wrap:wrap; gap:6px; padding-top:3px}
 .rango-entro .cifra{font-size:13px}
-/* Lista de origen de las entradas: la identidad que la dona no lleva. */
-.origen{list-style:none; margin:10px 0 0; padding:12px 0 0; border-top:1px solid var(--rule)}
-.origen li{display:flex; align-items:center; gap:8px; padding:6px 0; font-size:13.5px}
-.origen li + li{border-top:1px solid var(--rule)}
-.origen-nombre{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-.origen .num{font:500 12.5px Manrope, Archivo, sans-serif; font-variant-numeric:tabular-nums}
-.origen-pct{width:44px; text-align:right; color:var(--ink3)}
-
-/* ---- dona: rampa secuencial, magnitud de oscuro a claro ---- */
-.dona{margin:16px auto 4px; max-width:260px}
-.dona svg{display:block; width:100%; height:auto}
-/* 18px y sin decimales: el hueco interior mide 110 unidades del viewBox
-   y la cifra completa a 21px se sale por los costados. */
-.dona-cifra{
-  font:700 18px Manrope, Archivo, sans-serif; font-variant-numeric:proportional-nums;
-  fill:var(--ink);
+/* ---- barras ordenadas de Gráficos ----
+   Una fila por concepto: nombre y monto arriba, la barra y su parte del total
+   abajo. Un solo color, porque es una sola serie; el largo ya dice cuánto. */
+.barras{list-style:none; margin:12px 0 0; padding:0}
+.barras li{display:grid; grid-template-columns:1fr auto; gap:6px 12px; align-items:center; padding:9px 0}
+.barras li + li{border-top:1px dotted var(--rule)}
+.barras-nombre{
+  display:flex; align-items:center; gap:8px; min-width:0;
+  font-size:13.5px; font-weight:500; white-space:nowrap; overflow:hidden;
 }
-.dona-pie{font:400 10px Archivo, sans-serif; letter-spacing:.12em; text-transform:uppercase; fill:var(--ink3)}
-
-.leyenda{list-style:none; margin:14px 0 0; padding:0; border-top:1px solid var(--rule)}
-.leyenda li{border-bottom:1px solid var(--rule)}
-.leyenda li.cero{opacity:.55}
-/* Colocación explícita en las dos filas: si se deja al flujo automático,
-   el porcentaje se va a una fila suelta. */
-.leyenda button{
-  display:grid; grid-template-columns:auto 1fr auto; gap:1px 10px; align-items:center;
-  width:100%; padding:10px 2px; border:0; background:none; color:inherit;
-  font:inherit; text-align:left; cursor:pointer;
+.barras .cifra{font-size:13.5px; text-align:right}
+.barras-pista{height:8px; background:var(--hundido); border-radius:2px}
+.barras-relleno{display:block; height:100%; min-width:2px; background:var(--accent); border-radius:0 3px 3px 0}
+/* «Resto» es una suma de varios, no una categoría: va en tinta apagada. */
+.barras .resto .barras-relleno{background:var(--ink3); opacity:.5}
+.barras .resto .barras-nombre{color:var(--ink2); font-weight:400}
+.barras-parte{
+  min-width:34px; text-align:right; color:var(--ink3);
+  font:400 11px Manrope, Archivo, sans-serif; font-variant-numeric:tabular-nums;
 }
-.leyenda button:hover{background:var(--banda)}
-.leyenda button:focus-visible{outline:2px solid var(--accent); outline-offset:-2px}
-.leyenda .punto{grid-column:1; grid-row:1}
-.leyenda-nombre{grid-column:2; grid-row:1; font-weight:500}
-.leyenda-monto{grid-column:3; grid-row:1; font-size:14px; font-weight:500; white-space:nowrap; text-align:right}
-.leyenda-lim{grid-column:2; grid-row:2; font-size:11px; color:var(--ink3)}
-.leyenda-pct{grid-column:3; grid-row:2; font-size:11px; color:var(--ink3); text-align:right}
-.exceso{margin-left:6px; color:var(--over); font-weight:600}
+.barras-uno{margin:14px 0 4px; font-size:14px; line-height:1.5; color:var(--ink2)}
+.barras-uno b{font-weight:600; color:var(--ink)}
+.barras-cero{
+  margin:10px 0 0; padding-top:10px; border-top:1px solid var(--rule);
+  font-size:12px; line-height:1.5; color:var(--ink3);
+}
 .alerta code{font-family:ui-monospace, Menlo, Consolas, monospace; font-size:12px; background:var(--hundido); padding:1px 5px; border-radius:3px}
 
 /* ---- categorías sin límite ---- */
@@ -280,7 +267,10 @@ section{margin-top:30px}
   border-bottom:5px solid var(--accent);
 }
 .dia-barra{width:100%; background:var(--ink3); opacity:.42; border-radius:1px; transition:height .5s ease}
-.dia.con .dia-barra{background:var(--accent); opacity:.85}
+.dia.con .dia-barra{background:var(--accent); opacity:.55}
+.dia.pico .dia-barra{opacity:1}
+.cinta-cab{margin:0 0 10px; font-size:12.5px; color:var(--ink2)}
+.cinta-cab .cifra{font-size:12.5px; font-weight:600; color:var(--ink)}
 .dia.hoy .dia-barra{background:var(--ink); opacity:1}
 .dia.hoy{box-shadow:inset 0 -1px 0 var(--ink)}
 .cinta-pie{
@@ -311,17 +301,15 @@ section{margin-top:30px}
 .pliego > ul > li + li{border-top:1px dotted var(--rule)}
 /* Las listas traían su propia separación; dentro del pliego sobra y se
    vería doble contra la punteada de arriba. */
-.pliego .cuentas li, .pliego .sobre, .pliego .leyenda li{border-bottom:0}
+.pliego .cuentas li, .pliego .sobre{border-bottom:0}
 .pliego .asiento{border-bottom:0}
-.pliego .leyenda{margin-top:0; border-top:0}
 .pliego .asientos{border-top:0}
 /* Relleno lateral en la fila, para que el texto no toque el canto de la hoja. */
 .pliego .cuentas li{padding-left:12px; padding-right:12px}
 .pliego .asiento{padding-left:12px; padding-right:12px}
 .pliego .sobre-btn{padding-left:12px; padding-right:12px}
-.pliego .leyenda button{padding-left:12px; padding-right:12px}
 /* Sobre una banda, el hover tiene que ser más oscuro que la banda misma. */
-.pliego .sobre-btn:hover, .pliego .leyenda button:hover{background:var(--hundido)}
+.pliego .sobre-btn:hover{background:var(--hundido)}
 
 /* ---- cuentas ---- */
 .cuentas{list-style:none; margin:0; padding:0}
@@ -333,17 +321,12 @@ section{margin-top:30px}
 /* ---- asientos: el renglón reglado, con banda alterna ---- */
 .asientos{list-style:none; margin:0; padding:0; border-top:1px solid var(--rule)}
 .asiento{
-  display:grid; grid-template-columns:38px 1fr auto; gap:13px; align-items:center;
+  display:grid; grid-template-columns:1fr auto; gap:13px; align-items:center;
   width:100%; padding:11px 10px; border:0; border-bottom:1px solid var(--rule);
   background:none; color:inherit; font:inherit; text-align:left; cursor:pointer;
 }
 .asiento:hover{background:var(--hundido)}
 .asiento:focus-visible{outline:2px solid var(--accent); outline-offset:-2px}
-.asiento-fecha{
-  text-align:center; color:var(--ink3);
-  font:400 10px/1.2 Manrope, Archivo, sans-serif; font-variant-numeric:tabular-nums; text-transform:uppercase;
-}
-.asiento-fecha b{display:block; font-size:15px; font-weight:500; color:var(--ink2)}
 .asiento-glosa{min-width:0}
 .asiento-glosa b{font-weight:500}
 .asiento-glosa small{display:block; margin-top:1px; font-size:11.5px; color:var(--ink3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
@@ -352,6 +335,23 @@ section{margin-top:30px}
 }
 .asiento-monto.ingreso{color:var(--accent)}
 .asiento-monto.transferencia{color:var(--ink3)}
+
+/* Encabezado de día: el libro diario se lee por día, con lo que salió. */
+.dia-cab{
+  display:flex; justify-content:space-between; align-items:baseline; gap:10px;
+  padding:8px 12px 6px; font-size:12px; font-weight:600; color:var(--ink2);
+}
+.dia-salio{font:400 11.5px Manrope, Archivo, sans-serif; font-variant-numeric:tabular-nums; color:var(--ink3)}
+/* La banda alterna cuenta solo los asientos: si contara también los
+   encabezados, la alternancia se correría en cada día. */
+.pliego > ul.asientos > li:nth-child(odd){background:none}
+.pliego > ul.asientos > li.dia-cab{background:var(--hundido)}
+.pliego > ul.asientos > li.fila:nth-child(odd of .fila){background:var(--banda)}
+
+/* La fila de cierre: doble raya arriba, como se cierra una columna en el
+   papel. Va al final de la regla de bandas para ganarle. */
+.pliego > ul > li.cierre{background:var(--card); border-top:3px double var(--ink3)}
+.cuentas li.cierre > span{font-weight:600}
 
 /* ---- formularios ---- */
 .campos{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:13px}
@@ -472,7 +472,7 @@ section{margin-top:30px}
    después de tocar. */
 @media (hover:none){
   .sobre-btn:hover, .asiento:hover,
-  .pliego .sobre-btn:hover, .pliego .leyenda button:hover{background:none}
+  .pliego .sobre-btn:hover{background:none}
   .sin-limite button:hover{border-style:dashed; border-color:var(--rule); color:var(--ink2)}
   .sin-limite button:hover i{color:var(--ink3)}
 }
