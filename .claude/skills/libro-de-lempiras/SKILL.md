@@ -141,6 +141,13 @@ los pega al vuelo para el atajo. La función `norm()` compara ignorando emoji,
 tildes y mayúsculas — pero no el número gramatical: «Instalaciones» nunca va a
 encontrar «Instalación».
 
+**Los días se cuentan en hora de Honduras.** Supabase vive en UTC; desde el
+apéndice J la base está en `America/Tegucigalpa`. Antes, todo lo registrado
+desde las 6 de la tarde quedaba con la fecha del día siguiente, porque el atajo
+no manda fecha y las funciones toman `current_date`. Si alguna vez la fecha de
+un movimiento sale corrida un día, lo primero es revisar
+`select current_setting('TimeZone')`.
+
 **Dinero en `numeric(12,2)`, nunca `float`.** En el front se formatea, no se
 redondea.
 
