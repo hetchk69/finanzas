@@ -254,17 +254,35 @@ function Balance({ resumen }) {
     </section>`;
 }
 
-/* El elemento firma: dos marcas en una misma escala — dónde va el ciclo
-   y dónde va el gasto. Si el gasto adelanta al calendario, tinta roja.
-   Una sola cifra grande contesta "cuánto llevo"; lo demás queda subordinado.
-   Antes había tres del mismo tamaño y ninguna ganaba. */
+/* Diez comentarios, uno por cada décimo del presupuesto gastado, leídos
+   como «al llegar a»: desde 60 % «Ya casi se te va», desde 100 % —el límite
+   alcanzado— «Muerto X3», y por debajo de 20 % todavía «No has gastado».
+   Leídos como «hasta», el 61 % mostraba la frase del 70 % y el 91 % ya era
+   «Muerto X3» sin haber llegado al límite. Los escribió el dueño; el tono
+   es suyo, no se corrige. */
+const COMENTARIOS = [
+  "No has gastado", "Bueno, algo has gastado", "Mmm seguís", "Vamo' a Calmarlo",
+  "Holdup", "Ya casi se te va", "Calmaaaaa", "Muerto", "Muerto X2", "Muerto X3",
+];
+const comentario = (p) => COMENTARIOS[Math.min(Math.max(Math.floor(p / 10) - 1, 0), 9)];
+
+/* Semáforo, con una sola regla para la tarjeta y para cada presupuesto,
+   así una fila y la tarjeta nunca se contradicen: verde hasta 59 %,
+   amarillo de 60 a 99 %, rojo desde 100 %. El rojo sigue siendo solo para
+   el límite alcanzado. */
+const semaforo = (p) => (p >= 100 ? "rojo" : p >= 60 ? "amarillo" : "verde");
+
+/* El elemento firma, en el orden que pidió el dueño: cuánto llevas, el
+   comentario con su porcentaje, lo gastado contra lo presupuestado y la
+   barra que lo compara con el calendario. La proyección al cierre salió. */
 function Ritmo({ ciclo, presupuestos, onRegistrar }) {
   const limite = presupuestos.reduce((a, b) => a + Number(b.limite), 0);
   const gastado = presupuestos.reduce((a, b) => a + Number(b.gastado), 0);
   if (!limite) return null;
 
-  /* Con el ciclo en blanco no hay veredicto que dar: "Vas holgado · L 0.00"
-     es cierto e inútil. En su lugar, qué va a aparecer aquí y cómo empezar. */
+  /* Con el ciclo en blanco no hay comentario que hacer: «No has gastado ·
+     0 %» es cierto e inútil. En su lugar, qué va a aparecer aquí y cómo
+     empezar. */
   if (!gastado) {
     return html`
       <section class="ritmo estreno">
@@ -274,35 +292,24 @@ function Ritmo({ ciclo, presupuestos, onRegistrar }) {
       </section>`;
   }
 
-  const pGasto = Math.min((100 * gastado) / limite, 100);
+  const pReal = (100 * gastado) / limite;
+  const pGasto = Math.min(pReal, 100);
   const pCiclo = Math.min((100 * ciclo.dia_actual) / ciclo.dias_total, 100);
-  const delta = pGasto - pCiclo;
-  const estado = delta > 8 ? "sobre" : delta < -8 ? "holgado" : "a-ritmo";
-  const leyenda = { sobre: "Vas sobre el ritmo", holgado: "Vas holgado", "a-ritmo": "Vas a ritmo" }[estado];
-  /* La proyección sale de la misma base que la cifra grande —lo gastado en
-     categorías con límite—. Antes venía del gasto total del ciclo, así que las
-     dos cifras de la tarjeta no hablaban de lo mismo. */
-  const proyeccion = (gastado / Math.max(ciclo.dia_actual, 1)) * ciclo.dias_total;
 
   return html`
-    <section class=${`ritmo ${estado}`}>
+    <section class=${`ritmo luz-${semaforo(pReal)}`}>
       <p class="ritmo-rotulo">Llevas gastado</p>
       <${Cifra} valor=${gastado} tam="gr" />
-      <p class="ritmo-veredicto"><b>${leyenda}</b> · de L ${L(limite)} presupuestados</p>
+      <p class="ritmo-veredicto"><b>${comentario(pReal)}</b> · ${pct(pReal)}</p>
+      <p class="ritmo-vs"><${Cifra} valor=${gastado} /> de <${Cifra} valor=${limite} /></p>
 
       <div class="escala" role="img"
-           aria-label=${`Gastado ${pct(pGasto)} del presupuesto, ciclo ${pct(pCiclo)} transcurrido`}>
+           aria-label=${`Gastado ${pct(pReal)} del presupuesto, ciclo ${pct(pCiclo)} transcurrido`}>
         <div class="escala-pista">
           <div class="escala-gasto" style=${`width:${pGasto}%`}></div>
           <div class="escala-ciclo" style=${`left:${pCiclo}%`}><span>hoy</span></div>
         </div>
-        <div class="escala-pie">
-          <span>${pct(pGasto)} gastado</span>
-          <span>${pct(pCiclo)} del ciclo</span>
-        </div>
       </div>
-
-      <p class="ritmo-cierre">A este paso el ciclo cierra en <b>L ${L(proyeccion)}</b>.</p>
     </section>`;
 }
 
@@ -367,34 +374,23 @@ function AjustarSobre({ cat, onCerrar, onHecho, onError }) {
     </dialog>`;
 }
 
-/* "excedido", no "sobre": el elemento ya se llama .sobre y una clase de
-   estado con el mismo nombre colapsaría el selector. */
-function estadoSobre(b, ciclo) {
-  const p = Number(b.pct_usado) || 0;
-  const pCiclo = (100 * ciclo.dia_actual) / ciclo.dias_total;
-  return p > 100 ? "excedido" : p > pCiclo + 8 ? "adelantado" : "bien";
-}
+/* El más gastado arriba. Con el semáforo por porcentaje, ordenar por
+   porcentaje ya deja los rojos primero, después los amarillos y al final los
+   verdes. En orden fijo, el único excedido podía quedar tercero de cinco. */
+const ordenarSobres = (lista) => [...lista].sort((a, b) => Number(b.pct_usado) - Number(a.pct_usado));
 
-/* Lo que se está pasando va arriba: excedidos, después los que van
-   adelantados al calendario, y al final los que van bien; dentro de cada
-   grupo, el más gastado primero. En orden fijo, el único excedido podía
-   quedar tercero de cinco. */
-const URGENCIA = { excedido: 0, adelantado: 1, bien: 2 };
-const ordenarSobres = (lista, ciclo) => [...lista].sort((a, b) =>
-  URGENCIA[estadoSobre(a, ciclo)] - URGENCIA[estadoSobre(b, ciclo)]
-  || Number(b.pct_usado) - Number(a.pct_usado));
-
-/* El color de la barra dice el estado, no la categoría: con un tono de
+/* El color de la barra dice cómo va, no qué categoría es: con un tono de
    azul distinto por categoría parecía que el tono codificaba algo, y no.
-   La identidad ya la lleva el emoji. */
+   La identidad ya la lleva el emoji. La marca fina sobre la barra sigue
+   diciendo dónde va el calendario. */
 function Sobre({ b, ciclo, animar, onAjustar }) {
   const p = Number(b.pct_usado) || 0;
   const disp = Number(b.disponible);
   const pCiclo = (100 * ciclo.dia_actual) / ciclo.dias_total;
-  const estado = estadoSobre(b, ciclo);
+  const luz = semaforo(p);
 
   return html`
-    <li class=${`sobre ${estado}`}>
+    <li class=${`sobre luz-${luz}`}>
       <button class="sobre-btn" type="button"
               aria-label=${`Ajustar el presupuesto de ${b.categoria}`}
               onClick=${() => onAjustar({ categoria: b.categoria, limite: b.limite, gastado: b.gastado })}>
@@ -402,10 +398,7 @@ function Sobre({ b, ciclo, animar, onAjustar }) {
         <span class="sobre-nombre">
           <${Marca} icono=${b.icono} color=${b.color} />${b.categoria}
         </span>
-        <span class="sobre-restante">
-          ${p > 100 ? "excedido " : "quedan "}
-          <${Cifra} valor=${Math.abs(disp)} tono=${p > 100 ? "rojo" : ""} />
-        </span>
+        <span class="sobre-pct">${pct(p)}</span>
       </div>
       <div class="barra">
         <div class="barra-relleno" style=${`width:${animar ? Math.min(p, 100) : 0}%`}></div>
@@ -413,7 +406,7 @@ function Sobre({ b, ciclo, animar, onAjustar }) {
       </div>
       <div class="sobre-pie">
         <span>${L(b.gastado)} de ${L(b.limite)}</span>
-        <span class="sobre-pct">${pct(p)}${estado === "adelantado" ? " · adelantado" : ""}</span>
+        <span class="sobre-restante"><${Cifra} valor=${disp} /></span>
       </div>
       </button>
     </li>`;
@@ -1131,7 +1124,7 @@ function App() {
             <//>
             ${datos.presupuestos.length
               ? html`<div class="pliego"><ul class="sobres">
-                  ${ordenarSobres(datos.presupuestos, c).map((b) => html`
+                  ${ordenarSobres(datos.presupuestos).map((b) => html`
                     <${Sobre} key=${b.categoria} b=${b} ciclo=${c} animar=${animar} onAjustar=${setAjustando} />`)}
                 </ul></div>`
               : html`<p class="vacio">Ninguna categoría tiene límite todavía.</p>`}

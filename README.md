@@ -176,11 +176,12 @@ tinta y el rojo queda reservado para el sobregiro. No hay variante oscura por
 decisión: `color-scheme:light` en `:root` es obligatorio para que un teléfono en
 modo oscuro no pinte los controles nativos en oscuro sobre este papel.
 
-**El elemento firma es el medidor de ritmo.** Pone dos marcas en una misma escala:
-dónde va el ciclo y dónde va el gasto. Si el gasto adelanta al calendario, pasa a
-tinta roja. Cada sobre de presupuesto lleva además su propia marca de ritmo, así
-que no solo dice cuánto queda sino si vas adelantado. Esa es la pregunta que un
-presupuesto debe responder, y la primera versión no la respondía nunca.
+**El elemento firma es el medidor de ritmo.** Arriba, cuánto llevas gastado; debajo,
+un comentario según el porcentaje del presupuesto —de «No has gastado» a «Muerto
+X3»—, lo gastado de lo presupuestado y una barra con la marca de «hoy», que pone en
+una misma escala dónde va el gasto y dónde va el calendario. Cada presupuesto lleva
+su propia marca de «hoy» sobre la barra. El color sigue un semáforo: verde hasta
+59 %, amarillo de 60 a 99 %, rojo desde 100 %.
 
 Tipografías: **Archivo** para el texto y **Manrope** para las cifras, tabulares
 en las columnas y el signo de lempira subordinado al número.

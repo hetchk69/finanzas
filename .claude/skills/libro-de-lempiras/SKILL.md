@@ -59,10 +59,18 @@ teñida, el hover tiene que bajar a `--hundido` para verse.
 encabezados «Hoy», «Ayer», «sáb 17 oct» y lo que salió ese día; la banda alterna
 cuenta solo los asientos (`:nth-child(odd of .fila)`), no los encabezados. Las
 cuentas cierran con una fila de total bajo doble raya, porque es de los datos
-que más importan. Los presupuestos van por urgencia —excedidos, adelantados al
-calendario, los que van bien— y el color de su barra dice ese estado, no la
-categoría: azul `--accent`, ámbar `--warn` con la palabra «adelantado», rojo
-`--over` con «excedido». Una meta dice cuánto falta, no solo cuánto hay.
+que más importan. Los presupuestos van del más gastado al menos: arriba el
+porcentaje, abajo «gastado de límite» y la diferencia sola, sin la palabra
+«quedan» (negativa y en rojo si se pasó). Una meta dice cuánto falta, no solo
+cuánto hay.
+
+**Semáforo: verde, amarillo, rojo, con una sola regla.** Verde hasta 59 %,
+amarillo de 60 a 99 %, rojo desde 100 %, igual para la tarjeta principal y para
+cada presupuesto, así nunca se contradicen. El color va en la barra y en el filo
+de la tarjeta, nunca en la categoría; el texto queda en tinta, salvo el rojo.
+El amarillo es `--amarillo` (#B08600), el más claro que llega a 3:1 contra la
+pista de la barra: uno más brillante baja a 2:1 y la barra casi no se ve. El
+rojo sigue reservado para el límite alcanzado.
 
 **Usa la tarjeta con criterio.** Borde, relleno, radio y sombra marcan un
 elemento como objeto aparte. Aplicarlos a todo aplana la jerarquía. Hoy el
@@ -109,8 +117,17 @@ propio contenedor con `overflow-x:auto`.
 hoy». Lo demás baja a 13px. Si tres cifras compiten por el mismo tamaño, ninguna
 gana.
 
-**El vacío invita, no informa.** Con el libro en cero, «Vas holgado · proyección
-L 0.00» es cierto e inútil. Un estado vacío dice qué va a aparecer ahí y cómo
+**La tarjeta principal, en este orden:** «Llevas gastado» con la cifra
+grande; el comentario con su porcentaje; lo gastado de lo presupuestado; y la
+barra con la marca de «hoy». Nada más: la proyección al cierre se quitó a pedido
+del dueño. Los diez comentarios son suyos, uno por décimo del presupuesto y
+leídos «al llegar a»: por debajo de 20 % «No has gastado», 20 % «Bueno, algo has
+gastado», 30 % «Mmm seguís», 40 % «Vamo' a Calmarlo», 50 % «Holdup», 60 % «Ya
+casi se te va», 70 % «Calmaaaaa», 80 % «Muerto», 90 % «Muerto X2», desde 100 %
+«Muerto X3». El tono es suyo y no se corrige.
+
+**El vacío invita, no informa.** Con el libro en cero, «No has gastado · 0 %»
+es cierto e inútil. Un estado vacío dice qué va a aparecer ahí y cómo
 poner lo primero.
 
 **Las fechas se escriben como habla la gente.** `lun 19 oct · quedan 12 días`,

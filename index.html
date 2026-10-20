@@ -28,6 +28,10 @@
   --paper:#F8FAFD; --card:#FFFFFF; --banda:#F3F7FC; --hundido:#EDF2F8;
   --rule:#DCE5F0;  --ink:#141C28;  --ink2:#54627A; --ink3:#64748B;
   --accent:#2E5E9E; --over:#B33A2B; --warn:#8A6412;
+  /* Semáforo de presupuestos. Medidos contra la pista de la barra (#EDF2F8):
+     el verde da 4.5:1 y el amarillo 3:1. Un amarillo más brillante bajaba a
+     2:1 y la barra casi no se veía; este mostaza es el más claro que pasa. */
+  --verde:#2F7D4A; --amarillo:#B08600;
   --on-accent:#FFFFFF;
   --sombra:0 1px 0 var(--rule), 0 10px 30px -22px rgba(20,28,40,.45);
   color-scheme:light;
@@ -79,13 +83,12 @@ section{margin-top:30px}
   background:var(--card); border:1px solid var(--rule); box-shadow:var(--sombra);
   border-left:3px solid var(--accent);
 }
-.ritmo.sobre{border-left-color:var(--over)}
-.ritmo.holgado{border-left-color:var(--accent)}
 .ritmo-rotulo{margin:0 0 5px; font-size:13px; color:var(--ink3)}
 .ritmo .cifra.gr{display:block}
 .ritmo-veredicto{margin:8px 0 0; font-size:13.5px; color:var(--ink2)}
 .ritmo-veredicto b{font-weight:600; color:var(--ink)}
-.ritmo.sobre .ritmo-veredicto b{color:var(--over)}
+.ritmo-vs{margin:4px 0 0; font-size:13px; color:var(--ink3)}
+.ritmo-vs .cifra{font-size:13px; color:var(--ink2)}
 
 /* El ciclo sin estrenar no tiene veredicto que dar: dice qué va a salir aquí. */
 .ritmo.estreno{border-left-color:var(--rule)}
@@ -99,25 +102,12 @@ section{margin-top:30px}
   position:absolute; inset:0 auto 0 0; background:var(--accent); border-radius:2px;
   transition:width .7s cubic-bezier(.22,.8,.3,1);
 }
-.ritmo.sobre .escala-gasto{background:var(--over)}
 .escala-ciclo{position:absolute; top:-5px; bottom:-5px; width:2px; background:var(--ink); border-radius:2px}
 .escala-ciclo span{
   position:absolute; top:-15px; left:50%; transform:translateX(-50%);
   font:500 10.5px Archivo, sans-serif; letter-spacing:.02em; color:var(--ink2);
 }
-.escala-pie{
-  display:flex; justify-content:space-between; margin-top:9px;
-  font:400 11px Manrope, Archivo, sans-serif; font-variant-numeric:tabular-nums; color:var(--ink3);
-}
 
-.ritmo-cierre{
-  margin:16px 0 0; padding-top:13px; border-top:1px solid var(--rule);
-  font-size:13px; color:var(--ink3);
-}
-.ritmo-cierre b{
-  font:500 13px Manrope, Archivo, sans-serif; font-variant-numeric:tabular-nums;
-  color:var(--ink2); white-space:nowrap;
-}
 
 /* ---- sobres de presupuesto ---- */
 .sobres{list-style:none; margin:0; padding:0}
@@ -136,24 +126,35 @@ section{margin-top:30px}
    columnas aunque los emoji midan distinto. */
 .marca{font-style:normal; font-size:15px; line-height:1; width:20px; flex:none; text-align:center}
 .sobre-restante{font-size:12px; color:var(--ink2); white-space:nowrap}
+.sobre-cab .sobre-pct{
+  font:500 15px Manrope, Archivo, sans-serif; font-variant-numeric:tabular-nums;
+  color:var(--ink); white-space:nowrap;
+}
+.sobre-pie .sobre-restante .cifra{font-size:12px; font-weight:500; color:var(--ink2)}
+.sobre-pie .sobre-restante .cifra.rojo{color:var(--over)}
 .barra{position:relative; height:8px; margin-top:10px; background:var(--hundido); border-radius:2px}
 .barra-relleno{
   position:absolute; inset:0 auto 0 0; background:var(--accent); border-radius:2px;
   transition:width .7s cubic-bezier(.22,.8,.3,1);
 }
 .barra-relleno.meta{background:var(--accent)}
-.sobre.excedido .barra-relleno{background:var(--over)}
-/* Adelantado al calendario: ámbar, y siempre con la palabra al lado. El
-   rojo queda para el excedido, que es el único que ya se pasó. */
-.sobre.adelantado .barra-relleno{background:var(--warn)}
-.sobre.adelantado .sobre-pct{color:var(--warn)}
+/* ---- semáforo: verde hasta 59 %, amarillo de 60 a 99 %, rojo desde 100 % ----
+   El color va en la barra y en el filo de la tarjeta. El texto queda en tinta
+   —un amarillo como letra no se lee sobre el papel— salvo el rojo, que sí se
+   lee y además avisa. */
+.sobre.luz-verde .barra-relleno, .ritmo.luz-verde .escala-gasto{background:var(--verde)}
+.sobre.luz-amarillo .barra-relleno, .ritmo.luz-amarillo .escala-gasto{background:var(--amarillo)}
+.sobre.luz-rojo .barra-relleno, .ritmo.luz-rojo .escala-gasto{background:var(--over)}
+.ritmo.luz-verde{border-left-color:var(--verde)}
+.ritmo.luz-amarillo{border-left-color:var(--amarillo)}
+.ritmo.luz-rojo{border-left-color:var(--over)}
+.ritmo.luz-rojo .ritmo-veredicto b, .sobre.luz-rojo .sobre-pct{color:var(--over)}
 .meta-de{font:400 11.5px Manrope, Archivo, sans-serif; font-variant-numeric:tabular-nums; color:var(--ink3)}
 .barra-ritmo{position:absolute; top:-3px; bottom:-3px; width:1.5px; background:var(--ink2); opacity:.55}
 .sobre-pie{
   display:flex; justify-content:space-between; margin-top:7px;
   font:400 11px Manrope, Archivo, sans-serif; font-variant-numeric:tabular-nums; color:var(--ink3);
 }
-.sobre.excedido .sobre-pct{color:var(--over)}
 /* Las metas usan .sobre sin botón dentro: llevan su propio relleno. */
 .sobre.estatico{padding:14px 0}
 
