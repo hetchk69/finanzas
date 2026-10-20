@@ -2,7 +2,7 @@
    Libro de Lempiras — aplicación
    Preact + htm, componentes y hooks. Sin paso de compilación.
    ============================================================ */
-const { html, render, useState, useEffect, useMemo, useRef, useCallback } = htmPreact;
+const { html, render, useState, useEffect, useRef, useCallback } = htmPreact;
 
 /* ---------- conexión ---------- */
 const URL_ = "https://dabvugwhzwkmdmsvrazz.supabase.co";
@@ -275,7 +275,7 @@ const semaforo = (p) => (p >= 100 ? "rojo" : p >= 60 ? "amarillo" : "verde");
 /* El elemento firma, en el orden que pidió el dueño: cuánto llevas, el
    comentario con su porcentaje, lo gastado contra lo presupuestado y la
    barra que lo compara con el calendario. La proyección al cierre salió. */
-function Ritmo({ ciclo, presupuestos, onRegistrar }) {
+function Ritmo({ ciclo, presupuestos }) {
   const limite = presupuestos.reduce((a, b) => a + Number(b.limite), 0);
   const gastado = presupuestos.reduce((a, b) => a + Number(b.gastado), 0);
   if (!limite) return null;
@@ -287,8 +287,7 @@ function Ritmo({ ciclo, presupuestos, onRegistrar }) {
     return html`
       <section class="ritmo estreno">
         <p class="estreno-titulo">El ciclo está sin estrenar.</p>
-        <p class="estreno-queva">Al primer gasto vas a ver aquí cuánto llevas de los <b>L ${L(limite)}</b> que te pusiste, y si vas adelantado al calendario.</p>
-        <button class="btn primario" type="button" onClick=${onRegistrar}>Anotar el primero</button>
+        <p class="estreno-queva">Al primer gasto que anotes desde el atajo vas a ver aquí cuánto llevas de los <b>L ${L(limite)}</b> que te pusiste, y si vas adelantado al calendario.</p>
       </section>`;
   }
 
@@ -684,147 +683,6 @@ function Graficos({ des, cargando, onRango }) {
     </div>`;
 }
 
-/* ---------- captura ---------- */
-function Captura({ listas, saldos, onHecho, onError, refMonto }) {
-  const [tipo, setTipo] = useState("gasto");
-  const [monto, setMonto] = useState("");
-  const [cat, setCat] = useState("");
-  const [cuenta, setCuenta] = useState("");
-  const [destino, setDestino] = useState("");
-  const [fecha, setFecha] = useState(HOY);
-  const [nota, setNota] = useState("");
-  const [enviando, setEnviando] = useState(false);
-
-  const cats = tipo === "ingreso" ? listas.ingresos : listas.gastos;
-
-  /* `get_lists` solo devuelve nombres de cuenta; el tipo viene en los saldos
-     de `dashboard()`. */
-  const tipoDe = useMemo(() => {
-    const m = {};
-    (saldos || []).forEach((x) => { m[x.cuenta] = x.tipo; });
-    return m;
-  }, [(saldos || []).map((x) => `${x.cuenta}:${x.tipo}`).join("|")]);
-
-  /* Una tarjeta de crédito no recibe ingresos: meterle dinero es pagarla, y
-     eso es una transferencia, no una entrada. El atajo del teléfono ya la
-     excluye de su lista y lo deja dicho; esto hace que la web concuerde.
-     En transferencia sí aparece, porque pagar la tarjeta es exactamente eso. */
-  const cuentas = tipo === "ingreso"
-    ? listas.cuentas.filter((c) => tipoDe[c] !== "credito")
-    : listas.cuentas;
-
-  /* La cuenta preferida depende del tipo: un gasto sale del efectivo, pero una
-     quincena cae al banco. Antes la pestaña heredaba la cuenta del movimiento
-     anterior, así que pasar de Gasto a Ingreso dejaba "Efectivo" puesto y el
-     salario entero podía quedar registrado en la mano. */
-  useEffect(() => {
-    if (!cuentas.length) return;
-    const pref = tipo === "ingreso"
-      ? cuentas.find((c) => tipoDe[c] === "debito") || cuentas[0]
-      : cuentas.includes("Efectivo") ? "Efectivo" : cuentas[0];
-    setCuenta(pref);
-  }, [tipo, cuentas.join("|")]);
-
-  useEffect(() => {
-    if (!listas.cuentas.length) return;
-    const otras = listas.cuentas.filter((c) => c !== "Efectivo");
-    setDestino((d) => d || (otras.includes("Ahorros") ? "Ahorros" : otras[0] || ""));
-  }, [listas.cuentas.join("|")]);
-
-  useEffect(() => { setCat(cats[0] || ""); }, [tipo, cats.join("|")]);
-
-  async function enviar(ev) {
-    ev.preventDefault();
-    const n = parseFloat(monto);
-    if (!(n > 0)) return onError("El monto debe ser mayor que cero");
-    if (tipo === "transferencia" && cuenta === destino) return onError("Origen y destino deben ser distintos");
-
-    const args = tipo === "transferencia"
-      ? { p_amount: n, p_from: cuenta, p_to: destino }
-      : { p_amount: n, p_category: cat, p_account: cuenta };
-    if (nota.trim()) args.p_note = nota.trim();
-    if (fecha && fecha !== HOY) args.p_date = fecha;
-
-    const fn = tipo === "gasto" ? "log_expense" : tipo === "ingreso" ? "log_income" : "transfer";
-    setEnviando(true);
-    try {
-      const r = await rpc(fn, args);
-      setMonto(""); setNota("");
-      onHecho(
-        tipo === "gasto"
-          ? r.disponible == null ? `L ${L(n)} en ${r.categoria}` : `L ${L(n)} en ${r.categoria} · quedan L ${L(r.disponible)}`
-          : tipo === "ingreso" ? `L ${L(n)} en ${r.cuenta} · saldo L ${L(r.saldo)}`
-          : `Transferido L ${L(n)} · origen L ${L(r.saldo_origen)}`
-      );
-    } catch (e) { onError(e.message); }
-    finally { setEnviando(false); }
-  }
-
-  const esTrans = tipo === "transferencia";
-  return html`
-    <form class="captura" onSubmit=${enviar}>
-      <div class="pestanas" role="tablist">
-        ${["gasto", "ingreso", "transferencia"].map((t) => html`
-          <button key=${t} type="button" role="tab" aria-selected=${tipo === t}
-                  onClick=${() => setTipo(t)}>${t[0].toUpperCase() + t.slice(1)}</button>`)}
-      </div>
-
-      <div class="campos">
-        <label class="campo monto">
-          <span>Monto</span>
-          <div class="monto-caja">
-            <i>L</i>
-            <input ref=${refMonto} type="number" step="0.01" min="0.01" inputmode="decimal"
-                   value=${monto} onInput=${(e) => setMonto(e.target.value)}
-                   placeholder="0.00" required />
-          </div>
-        </label>
-
-        ${/* El `value` explícito en cada <option> no es decorativo: sin él Preact
-             deja el atributo en blanco, el <select> no encuentra con qué casar
-             su valor y se queda en selectedIndex -1. Se veía como un selector
-             vacío al cargar, y al enviar sin tocarlo viajaba categoría y cuenta
-             en blanco. */ ""}
-        ${!esTrans && html`
-          <label class="campo">
-            <span>Categoría</span>
-            <select value=${cat} onChange=${(e) => setCat(e.target.value)}>
-              ${cats.map((c) => html`<option key=${c} value=${c}>${c}</option>`)}
-            </select>
-          </label>`}
-
-        <label class="campo">
-          <span>${esTrans ? "Desde" : "Cuenta"}</span>
-          <select value=${cuenta} onChange=${(e) => setCuenta(e.target.value)}>
-            ${cuentas.map((c) => html`<option key=${c} value=${c}>${c}</option>`)}
-          </select>
-        </label>
-
-        ${esTrans && html`
-          <label class="campo">
-            <span>Hacia</span>
-            <select value=${destino} onChange=${(e) => setDestino(e.target.value)}>
-              ${listas.cuentas.map((c) => html`<option key=${c} value=${c}>${c}</option>`)}
-            </select>
-          </label>`}
-
-        <label class="campo">
-          <span>Fecha</span>
-          <input type="date" value=${fecha} onInput=${(e) => setFecha(e.target.value)} />
-        </label>
-
-        <label class="campo ancho">
-          <span>Nota</span>
-          <input type="text" value=${nota} onInput=${(e) => setNota(e.target.value)} placeholder="opcional" />
-        </label>
-      </div>
-
-      <button class="btn primario" type="submit" disabled=${enviando}>
-        ${enviando ? "Registrando…" : "Registrar"}
-      </button>
-    </form>`;
-}
-
 /* ---------- corregir un asiento ---------- */
 function Corregir({ mov, listas, onCerrar, onHecho, onError }) {
   const ref = useRef(null);
@@ -984,14 +842,6 @@ function App() {
   const [cargandoDes, setCargandoDes] = useState(false);
   const [vista, setVista] = useState(ls("quanto.vista", "libro"));
   const [animar, setAnimar] = useState(false);
-  const [enRegistrar, setEnRegistrar] = useState(false);
-  const refMonto = useRef(null);
-
-  const irARegistrar = useCallback(() => {
-    document.getElementById("registrar")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    setTimeout(() => refMonto.current?.focus(), 400);
-  }, []);
-
   const notificar = useCallback((m) => {
     setAviso(m);
     setTimeout(() => setAviso((a) => (a === m ? null : a)), 4000);
@@ -1032,24 +882,6 @@ function App() {
 
   useEffect(() => { lset("quanto.vista", vista); }, [vista]);
 
-  /* El botón fijo se aparta cuando el formulario ya está a la vista: si no,
-     tapa la cifra del sobre que queda justo debajo. Se mide la posición en
-     cada scroll en lugar de usar IntersectionObserver, para no depender de
-     un nodo concreto — Preact lo reemplaza al re-renderizar. */
-  useEffect(() => {
-    if (!listo) return;
-    const medir = () => {
-      const el = document.getElementById("registrar");
-      if (el) setEnRegistrar(el.getBoundingClientRect().top < innerHeight - 90);
-    };
-    medir();
-    addEventListener("scroll", medir, { passive: true });
-    addEventListener("resize", medir);
-    return () => { removeEventListener("scroll", medir); removeEventListener("resize", medir); };
-    /* `datos` va en las dependencias a propósito: al montar la página aún
-       muestra el esqueleto y es corta, así que la primera medición da un
-       falso positivo y el botón arrancaría oculto hasta el primer scroll. */
-  }, [listo, datos]);
 
   const cargarDesglose = useCallback(async (r) => {
     setCargandoDes(true);
@@ -1067,13 +899,6 @@ function App() {
     notificar(msg);
     await Promise.all([cargar(), cargarDesglose(rango)]);
   }, [cargar, cargarDesglose, rango.desde, rango.hasta]);
-
-  async function deshacer() {
-    try {
-      const r = await rpc("undo_last");
-      await tras(r.ok ? `Deshecho: L ${L(r.monto)} (${r.tipo})` : "No hay movimientos que deshacer");
-    } catch (e) { notificar(`Error: ${e.message}`) }
-  }
 
   if (fase === "entrar") return html`<${Entrar} onListo=${() => setFase("listo")} />`;
 
@@ -1110,7 +935,7 @@ function App() {
         : html`
           <div class="columnas">
           <div class="col col-a">
-          <${Ritmo} ciclo=${c} presupuestos=${datos.presupuestos} onRegistrar=${irARegistrar} />
+          <${Ritmo} ciclo=${c} presupuestos=${datos.presupuestos} />
 
           <${Balance} resumen=${datos.resumen} />
 
@@ -1217,15 +1042,9 @@ function App() {
                       ];
                     })}
                   </ul></div>`
-                : html`<p class="vacio">El libro está en blanco. Registra el primer movimiento abajo.</p>`}
+                : html`<p class="vacio">El libro está en blanco. Lo que anotes desde el atajo aparece aquí.</p>`}
             </section>`}
 
-          <section id="registrar">
-            <${Regla} etiqueta="Registrar" />
-            <${Captura} listas=${listas} saldos=${datos.saldos} refMonto=${refMonto}
-                        onHecho=${tras} onError=${(m) => notificar(`Error: ${m}`)} />
-            <button class="btn sutil" type="button" onClick=${deshacer}>Deshacer el último</button>
-          </section>
           </div>
           </div>
         `)}
@@ -1238,10 +1057,6 @@ function App() {
           await salir(); setDatos(null); setDes(null); setFase("entrar");
         }}>Cerrar sesión</button>
       </details>
-
-      ${vista === "libro" && html`
-      <button class=${`fab ${enRegistrar ? "oculto" : ""}`} type="button"
-              onClick=${irARegistrar}>Registrar</button>`}
 
       ${editando && html`
         <${Corregir} mov=${editando} listas=${listas} onCerrar=${() => setEditando(null)}

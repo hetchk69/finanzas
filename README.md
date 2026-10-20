@@ -190,8 +190,8 @@ en las columnas y el signo de lempira subordinado al número.
 
 **Libro** — el ciclo, el ritmo, los presupuestos, el gasto por día, los saldos,
 las metas y el libro de asientos. Tocar un asiento lo abre para corregir o
-eliminar; tocar un sobre abre su límite. También registra gasto, ingreso y
-transferencia, y deshace el último.
+eliminar; tocar un sobre abre su límite. No registra nada: desde octubre de 2026
+los movimientos entran solo por el atajo, y el tablero es para mirar y corregir.
 
 **Gráficos** — un rango de fechas (por defecto el mes calendario) y tres tarjetas
 de barras ordenadas de mayor a menor: gasto por categoría, gasto por cuenta y de
@@ -218,8 +218,9 @@ Libro, donde los presupuestos van por urgencia y la barra se tiñe por estado.
 Si el apéndice B no está aplicado, **no se rompe**: lo detecta, avisa y sigue
 sirviendo con lo que expone el script base.
 
-**Verificado en navegador**: registró un gasto de L 175.50 en Comida (notificación
-`quedan L 3,824.50`, saldo actualizado) y lo deshizo.
+El formulario para registrar desde el navegador se quitó en octubre de 2026, a
+pedido del dueño: todo se anota desde el atajo. Con él se fueron el botón flotante
+y «Deshacer el último»; deshacer queda en el atajo `Deshacer`.
 
 ### Entrar con usuario y contraseña
 

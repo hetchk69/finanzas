@@ -48,7 +48,7 @@ body{
 .hoja-libro{
   max-width:720px; margin:0 auto; padding:0 18px;
   padding-block:22px;
-  padding-bottom:calc(env(safe-area-inset-bottom,0px) + 104px);
+  padding-bottom:calc(env(safe-area-inset-bottom,0px) + 40px);
 }
 section{margin-top:30px}
 
@@ -372,13 +372,6 @@ section{margin-top:30px}
 .campo input:focus,.campo select:focus,.monto-caja input:focus{outline:2px solid var(--accent); outline-offset:1px; border-color:transparent}
 .monto-caja:focus-within{outline:2px solid var(--accent); outline-offset:1px}
 
-.pestanas{display:flex; gap:0; margin-bottom:16px; border-bottom:1px solid var(--rule)}
-.pestanas button{
-  flex:1; padding:9px 4px; border:0; border-bottom:2px solid transparent; background:none;
-  color:var(--ink3); font:500 13px Archivo, sans-serif; cursor:pointer;
-}
-.pestanas button[aria-selected="true"]{color:var(--ink); border-bottom-color:var(--accent)}
-
 .btn{
   padding:10px 17px; border:1px solid var(--rule); border-radius:3px; background:var(--card);
   color:var(--ink2); font:500 14px Archivo, sans-serif; cursor:pointer;
@@ -386,10 +379,8 @@ section{margin-top:30px}
 .btn:hover{border-color:var(--ink3)}
 .btn.primario{background:var(--accent); border-color:var(--accent); color:var(--on-accent)}
 .btn.peligro{color:var(--over); border-color:var(--over); background:none}
-.btn.sutil{width:100%; margin-top:11px; background:none; border-style:dashed}
 .btn.icono{padding:8px 12px; font-size:16px; line-height:1}
 .btn:disabled{opacity:.55; cursor:default}
-.captura .btn.primario{width:100%; margin-top:16px; padding:13px}
 
 /* ---- avisos, vacíos, esqueleto ---- */
 .alerta{
@@ -410,17 +401,6 @@ section{margin-top:30px}
   background:var(--ink); color:var(--paper); font-size:14px; z-index:60;
   box-shadow:0 8px 26px -12px rgba(0,0,0,.6);
 }
-
-/* ---- acción fija ---- */
-.fab{
-  position:fixed; right:18px; bottom:calc(env(safe-area-inset-bottom,0px) + 18px);
-  padding:14px 24px; border:0; border-radius:3px; z-index:50;
-  background:var(--accent); color:var(--on-accent);
-  font:600 15px Archivo, sans-serif; cursor:pointer;
-  box-shadow:0 10px 26px -10px rgba(0,0,0,.45);
-  transition:opacity .25s ease, transform .25s ease;
-}
-.fab.oculto{opacity:0; transform:translateY(14px); pointer-events:none}
 
 /* ---- hoja de corrección ---- */
 .hoja{
@@ -459,13 +439,7 @@ section{margin-top:30px}
   .cabecera h1{font-size:27px}
   .columnas{display:grid; grid-template-columns:1.06fr .94fr; column-gap:42px; align-items:start}
   .col{display:block}
-  /* Registrar es lo que más se usa; en pantalla ancha sube a la cabecera de
-     la columna derecha en vez de esconderse al fondo, y el botón flotante
-     deja de hacer falta. */
-  .col-b{display:flex; flex-direction:column}
-  .col-b>#registrar{order:-1; margin-top:0}
-  .col-a>:first-child{margin-top:0}
-  .fab{display:none}
+  .col>:first-child{margin-top:0}
 }
 
 /* El dedo no tiene hover: los realces reservados al ratón solo se encienden

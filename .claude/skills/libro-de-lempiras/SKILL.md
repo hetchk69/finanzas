@@ -9,7 +9,10 @@ Tracker de gastos personal de un solo usuario, en lempiras. Una página sin
 compilación —`index.html` con los estilos y Preact+htm incrustados, más
 `app.js`— publicada en GitHub Pages contra Supabase por funciones RPC. Se abre
 veinte veces al día desde la pantalla de inicio de un iPhone, casi siempre
-justo después de registrar un gasto desde el atajo.
+justo después de registrar un gasto desde el atajo. **La página no registra**:
+desde octubre de 2026 todo entra por el atajo, y el tablero es para mirar,
+corregir un asiento y ajustar límites. No vuelvas a agregar un formulario de
+captura, un botón flotante de «Registrar» ni «Deshacer el último».
 
 Eso último manda sobre todo lo demás: **es una app de teléfono que se consulta
 en segundos**, no un panel de control que se estudia.
