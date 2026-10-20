@@ -109,13 +109,21 @@ rama de entrada va *entre* «Si» y «Si no»; lo de salida, entre «Si no» y
 
 **5. Texto** — a qué cuenta entra el dinero:
 ```
-Banco Atlántida Débito
-BAC Débito
+Banco Atlantida
+BAC
 Efectivo
 ```
 
-> BAC Crédito no aparece aquí a propósito: meter dinero a una tarjeta de crédito
-> no es un ingreso, es pagar la tarjeta. Eso es una transferencia.
+> Los nombres van cortos porque en una entrada no hay con qué confundirlos, y
+> el apéndice K enseñó a `log_income` a completarlos: busca el nombre exacto y,
+> si no lo halla, la única cuenta que empiece así. «Banco Atlantida» —sin tilde
+> y sin «Débito»— encuentra `Banco Atlántida Débito`.
+
+> «BAC» funciona por la misma razón por la que BAC Crédito no aparece en esta
+> lista: a una tarjeta de crédito no le entra dinero, abonarle es pagarla y eso
+> es una transferencia. Como la tarjeta no compite, «BAC» apunta sola a BAC
+> Débito. En la rama de salida no hay tal cosa: ahí sí se paga con la tarjeta,
+> y los nombres van completos.
 
 **6. Dividir texto** → **Líneas nuevas**
 
@@ -285,7 +293,8 @@ rápido es duplicar `Registrar` y borrar todo lo que viene después de 0c.
 | Síntoma | Causa |
 |---|---|
 | `Categoría de gasto no encontrada` | El nombre no existe en la base. Con `v5` el emoji y las tildes ya no son el problema; revise que la categoría exista. |
-| `Cuenta no encontrada` | El texto no coincide con ninguna cuenta. Las cuentas son `Banco Atlántida`, `BAC Débito`, `BAC Crédito`, `Efectivo`. |
+| `Cuenta no encontrada` | El texto no coincide con ninguna cuenta. Las cuentas son `Banco Atlántida Débito`, `BAC Débito`, `BAC Crédito`, `Efectivo` y `Ahorros`. La comparación ignora tildes y mayúsculas, pero no palabras que falten. **En la rama de entrada** el apéndice K sí completa el nombre corto si no es ambiguo (`Banco Atlantida`, `BAC`); en la de salida hay que escribirlos enteros. |
+| `A una tarjeta de crédito no le entra dinero` | Elegiste BAC Crédito en una entrada. Si fue para pagar la tarjeta, es una transferencia, no un ingreso. |
 | `Invalid login credentials` en 0a | El usuario o la contraseña del cuerpo no coinciden. Revisa que `email` lleve el `@hetchk69.github.io` y vaya en minúsculas. |
 | `Email not confirmed` en 0a | Al crear el usuario faltó marcar «Auto Confirm User». Se confirma desde Authentication → Users. |
 | `401` / `JWT cryptographic operation failed` | El encabezado `Authorization` está mal armado. Es `Bearer`, un espacio, la variable `token`. Sin `+`. |
